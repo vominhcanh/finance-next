@@ -1,0 +1,81 @@
+@import '../../styles/variables.scss';
+
+.bottom-navigation {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: #ffffff;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 16px;
+  z-index: 999;
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #d1d1d1;
+    transition: all 0.3s ease;
+    height: 100%;
+
+    &.active {
+      color: $primary-color;
+
+      .nav-icon {
+        color: $primary-color;
+      }
+    }
+
+    .nav-icon {
+      font-size: 24px;
+      margin-bottom: 0;
+      transition: transform 0.3s ease;
+    }
+  }
+
+  .nav-fab {
+    position: relative;
+    top: -20px;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+
+    .fab-circle {
+      width: 56px;
+      height: 56px;
+      background: lighten($primary-color, 5%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 16px rgba(108, 93, 211, 0.3);
+      transition: transform 0.2s;
+
+      .anticon {
+        font-size: 24px;
+        color: white;
+      }
+
+      &:hover {
+        transform: scale(1.05);
+        background: lighten($primary-color, 5%);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+}

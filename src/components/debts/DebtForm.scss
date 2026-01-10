@@ -1,0 +1,334 @@
+@import '../../styles/variables';
+
+.debt-form-container {
+    padding: $spacing-md;
+    max-width: 900px;
+
+    .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: $spacing-sm;
+        border-bottom: 1px solid #f0f0f0;
+
+        .page-title {
+            margin: 0;
+            font-size: 18px;
+            color: #494848;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+
+            button {
+                height: 32px; // slightly smaller than inputs for hierarchy
+                border-radius: 6px;
+                font-weight: 500;
+                font-size: 13px;
+                display: flex;
+                align-items: center;
+                box-shadow: none;
+
+                &.ant-btn-default {
+                    color: $text-secondary;
+                    border-color: transparent;
+                    background: transparent;
+
+                    &:hover {
+                        background: rgba(0, 0, 0, 0.04);
+                        color: $text-primary;
+                    }
+                }
+            }
+        }
+    }
+
+    .custom-tabs {
+        width: 100%;
+        margin-top: 10px;
+
+        .ant-tabs-nav {
+            margin-bottom: 20px;
+
+            &::before {
+                border-bottom: 1px solid #f0f0f0;
+            }
+        }
+
+        .ant-tabs-tab {
+            padding: 10px 15px;
+            font-size: 14px;
+            color: $text-secondary;
+            transition: all 0.2s;
+            width: 100%;
+
+            &:hover {
+                color: $primary-color;
+            }
+
+            &.ant-tabs-tab-active {
+                .ant-tabs-tab-btn {
+                    color: $primary-color;
+                    font-weight: 600;
+                }
+            }
+        }
+
+        .ant-tabs-ink-bar {
+            height: 2px;
+            background: $primary-color;
+        }
+    }
+
+    .form-section {
+        .ant-form-item {
+            margin-bottom: 12px; // Much tighter
+        }
+
+        .ant-form-item-label {
+            padding-bottom: 2px; // Closer label
+
+            label {
+                font-weight: 500;
+                color: $text-secondary;
+                font-size: 13px;
+                height: auto;
+            }
+        }
+
+        // Compact inputs
+        $input-height: 36px; // Slightly smaller than 36px
+
+        .ant-input,
+        .ant-input-number,
+        .ant-picker,
+        .ant-select,
+        .ant-select-selector {
+            border-radius: 6px;
+            font-size: 14px;
+
+            &:hover,
+            &:focus {
+                border-color: $primary-color;
+            }
+        }
+
+        .ant-input,
+        .ant-input-number-input,
+        .ant-select-selector,
+        .ant-picker {
+            height: $input-height !important;
+            line-height: $input-height;
+        }
+
+        // Remove padding from picker container as it has input inside,
+        // but often we need to adjust to ensure alignment.
+        .ant-picker {
+            padding: 4px 11px;
+
+            input {
+                line-height: 1.5; // Reset inner input
+            }
+        }
+
+        // Select specific: ensure content is centered vertically
+        .ant-select-selector {
+            display: flex !important;
+            align-items: center;
+
+            .ant-select-selection-item {
+                line-height: $input-height - 2px !important;
+            }
+        }
+
+        .ant-input-number-group-addon {
+            line-height: $input-height - 2px !important;
+        }
+    }
+
+    // Installment Configuration Area - Clean lines
+    .installment-config-box {
+        margin-top: 12px;
+        background: #fbfbfb; // Subtle contrast
+        border: 1px dashed #d9d9d9; // Distinctive dashed border for "optional/extra" config
+        padding: 16px;
+        border-radius: 8px;
+
+        h5.ant-typography {
+            color: $text-primary;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 0;
+        }
+    }
+}
+
+.payment-modal {
+    .ant-modal-content {
+        padding: 24px;
+    }
+
+    .ant-modal-header {
+        margin-bottom: 20px;
+        border-bottom: none;
+
+        .ant-modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: $text-primary;
+        }
+    }
+
+    .ant-modal-close {
+        top: 24px;
+        right: 24px;
+    }
+
+    .payment-modal-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .payment-info-row {
+        display: flex;
+        gap: 16px;
+
+        .payment-info-group {
+            flex: 1;
+        }
+    }
+
+    .payment-info-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+
+        &.full-width {
+            width: 100%;
+        }
+
+        .label {
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        .date-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: $text-primary;
+        }
+
+        .amount-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: $primary-color;
+            letter-spacing: -0.5px;
+        }
+    }
+
+    .wallet-select {
+        width: 100%;
+
+        .ant-select-selector {
+            border-radius: 10px !important; // Pill-like shape for select
+            height: 40px !important; // Reduced height
+            display: flex;
+            align-items: center;
+            border-color: #e0e0e0 !important;
+
+            &:hover {
+                border-color: $primary-color !important;
+            }
+        }
+
+        .ant-select-selection-item {
+            line-height: 38px !important;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .ant-select-selection-placeholder {
+            line-height: 38px !important;
+        }
+    }
+
+    // Footer Customization
+    .ant-modal-footer {
+        margin-top: 32px;
+        border-top: none;
+        display: flex;
+        gap: 12px;
+        width: 100%;
+
+        .ant-btn {
+            flex: 1; // 50% width each
+            height: 40px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            margin-inline-start: 0 !important; // Override ant design margin
+
+            &.ant-btn-default {
+                border-color: #d9d9d9;
+                color: $text-secondary;
+
+                &:hover {
+                    color: $text-primary;
+                    border-color: #bfbfbf;
+                    background: #f5f5f5;
+                }
+            }
+
+            &.ant-btn-primary {
+                background: $primary-color;
+                box-shadow: 0 4px 10px rgba($primary-color, 0.2);
+                border: none;
+
+                &:hover {
+                    box-shadow: 0 6px 15px rgba($primary-color, 0.3);
+                    transform: translateY(-1px);
+                }
+            }
+        }
+    }
+}
+
+.wallet-select-dropdown {
+    border-radius: 12px;
+    padding: 8px;
+
+    .ant-select-item {
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 4px;
+
+        &.ant-select-item-option-selected {
+            background-color: rgba($primary-color, 0.08);
+            font-weight: 600;
+        }
+    }
+
+    .wallet-option-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+
+        .wallet-name {
+            font-weight: 500;
+            color: $text-primary;
+        }
+
+        .wallet-balance {
+            font-size: 13px;
+            color: $primary-color;
+            background: #e2e5f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+    }
+}

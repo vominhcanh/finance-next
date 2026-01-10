@@ -1,0 +1,75 @@
+@import './fonts.scss';
+@import './variables.scss';
+@import './mixins.scss';
+
+// Reset and base styles
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+    font-family: 'SVN-Gilroy', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: $text-primary;
+    background-color: $background-color;
+}
+
+
+#root {
+    min-height: 100vh;
+}
+
+// Ant Design customization
+.ant-card {
+    border-radius: $border-radius-md;
+    box-shadow: $shadow-sm;
+}
+
+.ant-btn {
+    border-radius: $border-radius-md;
+
+    &.ant-btn-primary {
+        background-color: $primary-color;
+        border-color: $primary-color;
+    }
+}
+
+.ant-input,
+.ant-input-password {
+    border-radius: $border-radius-md;
+}
+
+.ant-form-item {
+    margin-bottom: $spacing-md;
+}
+
+// Custom scrollbar for mobile
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+// Mobile optimizations
+@include mobile {
+    body {
+        font-size: 14px;
+    }
+}

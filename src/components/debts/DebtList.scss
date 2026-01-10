@@ -1,0 +1,207 @@
+@use "../../styles/variables" as *;
+
+.debt-list-page {
+    padding: 16px;
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #838383;
+
+            .back-btn {
+                margin-right: 4px;
+                color: #1f1f1f;
+                font-size: 18px;
+                padding: 0;
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: none;
+            }
+        }
+
+        .add-btn {
+            font-weight: 500;
+            font-size: 13px;
+            height: 32px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            border-radius: 6px;
+        }
+    }
+
+    // SECTION 2: Summary/Filter
+    .summary-section {
+        background: #fafafa;
+        border-radius: 6px;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #e5e5e5;
+
+        .total-amount-value {
+            font-size: 36px;
+            font-weight: 600;
+            color: $primary-color;
+            margin-bottom: 20px;
+        }
+
+        .filter-tabs {
+            .custom-segmented {
+                padding: 4px;
+                border-radius: 6px;
+                background: #f4f4f4;
+                font-weight: 500;
+
+                .ant-segmented-item {
+                    border-radius: 6px;
+                }
+
+                .ant-segmented-item-selected {
+                    background: #fff;
+                    color: $primary-color;
+                }
+
+
+            }
+        }
+    }
+
+    // SECTION 3: List (Table)
+    .list-section {
+        .table-container {
+            background: #fffefe;
+            border: 1px solid #e5e5e5;
+            padding: 8px;
+            overflow: hidden;
+            border-radius: 6px;
+        }
+
+        .modern-table {
+            .ant-table {
+                .ant-table-thead>tr>th {
+                    background: #fff;
+                    border-bottom: 2px solid #f0f0f0;
+                    color: #525151;
+                    font-weight: 600;
+                    font-size: 12px;
+                    text-transform: uppercase;
+                    padding: 12px 16px;
+                }
+            }
+
+            .col-info {
+                .partner-name {
+                    font-size: 15px;
+                    font-weight: 600;
+                    color: #262626;
+                    margin-bottom: 6px;
+                }
+
+                .tags {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 6px;
+                    margin-bottom: 6px;
+
+                    .type-tag {
+                        margin: 0;
+                        font-size: 11px;
+                        font-weight: 500;
+                        border-radius: 4px;
+                    }
+                }
+
+                .date-info {
+                    font-size: 12px;
+                    color: #1f1f1f;
+                }
+            }
+
+            // RIGHT COLUMN
+            .col-amount {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                justify-content: center;
+                height: 100%;
+
+                .amount {
+                    font-size: 15px;
+                    font-weight: 700;
+                    margin-bottom: 4px;
+
+                    &.lend {
+                        color: #52c41a;
+                    }
+
+                    &.loan {
+                        color: #ff4d4f;
+                    }
+                }
+
+                .total-sub {
+                    font-size: 11px;
+                    color: #1f1f1f;
+                    margin-bottom: 6px;
+                }
+
+                .progress-wrapper {
+                    width: 80px;
+                    text-align: right;
+
+                    .ant-progress {
+                        margin-bottom: 0;
+
+                        .ant-progress-bg {
+                            height: 4px !important;
+                            border-radius: 10px;
+                        }
+                    }
+
+                    .progress-text {
+                        font-size: 10px;
+                        color: #1f1f1f;
+                        margin-top: 2px;
+                    }
+                }
+            }
+
+            // PAGINATION inside Table
+            .custom-pagination {
+                margin: 5px 0 0 0;
+
+                .ant-pagination-simple-pager input {
+                    width: 40px;
+                    border-radius: 6px;
+                    height: 28px;
+                }
+
+                .ant-pagination-item {
+                    border: none;
+                    background: #f5f5f5;
+                    border-radius: 8px;
+                    font-weight: 600;
+                }
+
+                .ant-pagination-prev,
+                .ant-pagination-next {
+                    .ant-pagination-item-link {
+                        border: none;
+                        background: transparent;
+                    }
+                }
+            }
+        }
+    }
+}
