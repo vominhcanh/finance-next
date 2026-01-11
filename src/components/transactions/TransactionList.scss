@@ -1,0 +1,232 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.transaction-list-container {
+    padding: 10px;
+    margin: 0 auto;
+
+    // --- Section 1: Header ---
+    .custom-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        padding: 0 4px;
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: $text-primary;
+            cursor: pointer;
+
+            &:hover {
+                background: rgba(0, 0, 0, 0.04);
+            }
+        }
+
+        .page-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: $text-primary;
+        }
+    }
+
+    // --- Section 2: Summary & Filters ---
+    .summary-section {
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 10px;
+
+            .summary-card {
+                background: #faf9f9;
+                border-radius: 10px;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+
+                .label {
+                    font-size: 13px;
+                    color: #8C98A4;
+                    font-weight: 600;
+                }
+
+                .value {
+                    font-size: 18px;
+                    font-weight: 800;
+                    letter-spacing: -0.5px;
+                }
+
+                &.income .value {
+                    color: #00c452;
+                }
+
+                &.expense .value {
+                    color: #FF647C;
+                }
+            }
+        }
+
+        .category-filter {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px; // Space for scrollbar if any
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+
+            .filter-pill {
+                white-space: nowrap;
+                padding: 10px 20px;
+                border-radius: 18px;
+                background: #fff;
+                color: #8C98A4;
+                font-weight: 600;
+                font-size: 14px;
+                cursor: pointer;
+                transition: all 0.2s;
+                border: 1px solid transparent;
+
+                &.active {
+                    background: $primary-color;
+                    color: #fff;
+                }
+            }
+        }
+    }
+
+    // --- Section 3: List ---
+    .list-section {
+        max-height: calc(100vh - 450px);
+        overflow-y: auto;
+        padding-right: 4px;
+        margin: 15px 0;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+
+        .date-group {
+            .date-header {
+                font-size: 12px;
+                padding: 0 10px;
+                margin: 16px 0;
+                font-weight: 400;
+                color: #4b4c4d;
+                letter-spacing: 0.5px;
+            }
+
+            .transaction-items {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+
+        .transaction-card {
+            background: #faf9f9;
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+
+            .card-left {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+
+                .icon-wrapper {
+                    width: 48px;
+                    height: 48px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 20px;
+                    background: #F4F6F8;
+
+                    &.income {
+                        background: rgba(0, 196, 140, 0.1);
+                    }
+
+                    &.expense {
+                        background: rgba(255, 100, 124, 0.1);
+                    }
+                }
+
+                .info {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+
+                    .category-name {
+                        font-size: 14px;
+                        font-weight: 600;
+                        color: $text-primary;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        max-width: 225px;
+                    }
+
+                    .time {
+                        margin-top: 6px;
+                        font-size: 10px;
+                        color: #8C98A4;
+                        font-weight: 500;
+                    }
+                }
+            }
+
+            .card-right {
+                .amount {
+                    font-size: 13px;
+                    font-weight: 600;
+                    letter-spacing: -0.4px;
+
+                    &.income {
+                        color: #00C48C;
+                    }
+
+                    &.expense {
+                        color: #FF647C;
+                    }
+                }
+            }
+        }
+    }
+
+    // Hide the FAB if we moved functionality to Header
+    .fab-add {
+        display: none;
+    }
+}
+
+.dashboard-loading-container {
+    height: calc(100vh - 104px);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    color: $primary-color;
+}

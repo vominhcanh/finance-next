@@ -14,11 +14,39 @@ export interface DebtStatusItem {
     count: number;
 }
 
+export interface WalletOverviewStats {
+    _id: string | null;
+    totalTransactions: number;
+    totalIncome: number;
+    totalExpense: number;
+}
+
+export interface MonthlyTransactionItem {
+    day: number;
+    date: string;
+    income: number;
+    expense: number;
+}
+
 // Derived type for UI
 export interface MonthlyOverview {
     totalIncome: number;
     totalExpense: number;
     balance: number;
+}
+
+export interface CardSummaryItem {
+    _id: string; // Wallet ID
+    walletName: string;
+    walletType: string;
+    totalTransactions: number;
+    totalIncome: number;
+    totalExpense: number;
+}
+
+export interface CategorySpendingItem {
+    categoryName: string;
+    totalAmount: number;
 }
 
 export const analyticsApi = {
@@ -47,5 +75,22 @@ export const analyticsApi = {
     async getCreditCardFees(): Promise<any> {
         const response = await apiClient.get<ApiResponse<any>>(API_ANALYTICS.creditCardFees);
         return response.data?.data;
+    },
+
+    async getCardsSummary(): Promise<CardSummaryItem[]> {
+        const response = await apiClient.get<ApiResponse<CardSummaryItem[]>>(API_ANALYTICS.cardsSummary);
+        return response.data?.data || [];
+    },
+
+    async getCategorySpending(walletId: string): Promise<WalletOverviewStats> {
+        const response = await apiClient.get<ApiResponse<WalletOverviewStats>>(API_ANALYTICS.categorySpending(walletId));
+        // Handle case where data might be null or empty
+        return response.data?.data || { _id: null, totalTransactions: 0, totalIncome: 0, totalExpense: 0 };
+    },
+
+    async getMonthlyTransactions(month?: string): Promise<MonthlyTransactionItem[]> {
+        const params = month ? { month } : {};
+        const response = await apiClient.get<ApiResponse<MonthlyTransactionItem[]>>(API_ANALYTICS.transactionsMonthly, { params });
+        return response.data?.data || [];
     }
 };

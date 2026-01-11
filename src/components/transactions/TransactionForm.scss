@@ -1,0 +1,14 @@
+.transaction-form-container {
+  .ant-form-item {
+    margin-bottom: 16px;
+  }
+
+  // Ensure row/col items align well
+  .ant-row {
+    margin-bottom: 0; // Let Form.Item handle spacing
+  }
+
+  .ant-segmented {
+    background-color: #f5f5f5;
+  }
+}

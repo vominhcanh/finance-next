@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Button, Segmented, Table, Tag, Progress } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { PlusOutlined, LeftOutlined } from '@ant-design/icons';
+import { PlusOutlined, LeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { formatCurrency } from '@utils/format.utils';
 import { useQueryDebts } from '@/queryHooks/debt';
 import { DebtData, DebtType } from '@/types/debt.type';
@@ -45,10 +45,10 @@ export const DebtList = () => {
                 <div className="col-info">
                     <div className="partner-name">{record.partnerName}</div>
                     <div className="tags">
-                        <Tag color={record.type === DebtType.LOAN ? 'red' : 'green'} className="type-tag" bordered={false}>
+                        <Tag color={record.type === DebtType.LOAN ? 'red' : 'green'} className="type-tag" variant="filled">
                             {record.type === DebtType.LOAN ? 'Vay' : 'Cho vay'}
                         </Tag>
-                        {record.isInstallment && <Tag color="blue" bordered={false}>Trả góp</Tag>}
+                        {record.isInstallment && <Tag color="blue" variant="filled">Trả góp</Tag>}
                     </div>
                     <div className="date-info">
                         {record.isInstallment
@@ -81,7 +81,7 @@ export const DebtList = () => {
                                     size="small"
                                     showInfo={false}
                                     strokeColor="#52c41a"
-                                    trailColor="#f0f0f0"
+                                    railColor="#f0f0f0"
                                 />
                                 <div className="progress-text">
                                     {record.paidMonths || 0}/{record.totalMonths} kỳ
@@ -98,25 +98,15 @@ export const DebtList = () => {
         <div className="debt-list-page">
             {/* SECTION 1: Header */}
             <div className="page-header">
-                <div className="header-title">
-                    <Button
-                        type="text"
-                        icon={<LeftOutlined />}
-                        className="back-btn"
-                        onClick={() => navigate({ to: '/' })}
-                    />
-                    <span>Sổ nợ</span>
+                <div className="custom-header">
+                    <div className="icon-btn back-btn" onClick={() => window.history.back()}>
+                        <ArrowRightOutlined rotate={180} />
+                    </div>
+                    <div className="page-title">Quản lý khoản vay</div>
+                    <div className="icon-btn add-btn" onClick={() => navigate({ to: '/debts/create' })}>
+                        <PlusOutlined />
+                    </div>
                 </div>
-                <Button
-                    type="primary"
-                    shape="round"
-                    size="middle"
-                    icon={<PlusOutlined />}
-                    onClick={() => navigate({ to: '/debts/create' })}
-                    className="add-btn"
-                >
-                    Thêm mới
-                </Button>
             </div>
 
             {/* SECTION 2: Summary Filter */}
@@ -148,19 +138,19 @@ export const DebtList = () => {
                         dataSource={debtList}
                         rowKey="_id"
                         loading={loading}
-                        scroll={{ y: 500 }}
+                        scroll={{ y: 400 }}
                         pagination={
                             isV2Response && safeResponse.meta ? {
                                 current: page,
                                 pageSize: safeResponse.meta.per_page,
                                 total: safeResponse.meta.itemCount,
                                 onChange: (p) => setPage(p),
-                                position: ['bottomCenter'],
+                                align: 'center',
                                 simple: true,
                                 className: 'custom-pagination'
                             } : {
                                 pageSize: pageSize,
-                                position: ['bottomCenter'],
+                                align: 'center',
                                 simple: true,
                                 className: 'custom-pagination'
                             }

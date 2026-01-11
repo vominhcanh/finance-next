@@ -15,6 +15,7 @@ import { transactionApi } from '@api/transaction.api';
 import { walletApi } from '@api/wallet.api';
 import { WalletData } from '@/types/wallet.type';
 import { TransactionData } from '@/types/transaction.type';
+import { DashboardAnalytics } from './DashboardAnalytics';
 import './Dashboard.scss';
 
 export const Dashboard = () => {
@@ -43,7 +44,7 @@ export const Dashboard = () => {
                 ]);
 
                 setWallets(Array.isArray(walletsData) ? walletsData : []);
-                setRecentTransactions(Array.isArray(transactionsData) ? transactionsData.slice(0, 5) : []);
+                setRecentTransactions(transactionsData.data);
                 try {
                     const [overview, debts, fees] = await Promise.all([
                         analyticsApi.getMonthlyOverview(),
@@ -60,7 +61,7 @@ export const Dashboard = () => {
                     }
                     setDebtStatus(debts || []);
                     setCreditCardFees(fees);
-                    console.log('Analytics Data:', { overview, debts, fees });
+
                 } catch (analyticsError) {
                     console.warn('Analytics API not available:', analyticsError);
                 }
@@ -75,15 +76,12 @@ export const Dashboard = () => {
         fetchDashboardData();
     }, []);
 
-    const filteredTransactions = recentTransactions.filter(tx => {
-        if (activeTab === 'ALL') return true;
-        return tx.type === activeTab;
-    });
 
     if (loading) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <Spin size="large" />
+            <div className="dashboard-loading-container">
+                <Spin size="small" />
+                <div className="loading-text">Đang tải dữ liệu...</div>
             </div>
         );
     }
@@ -155,51 +153,8 @@ export const Dashboard = () => {
                     </div>
                 </div>
             </div>
-            <div className="section-header">
-                <h2>Giao Dịch Gần Đây</h2>
-                <span className="view-more">Xem Tất Cả</span>
-            </div>
+            <DashboardAnalytics />
 
-            <div className="transaction-tabs">
-                {['ALL', 'INCOME', 'EXPENSE'].map((tab) => (
-                    <button
-                        key={tab}
-                        className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
-                        onClick={() => setActiveTab(tab as any)}
-                    >
-                        {tab === 'ALL' ? 'Tất cả' : tab === 'INCOME' ? 'Thu Nhập' : 'Chi Tiêu'}
-                    </button>
-                ))}
-            </div>
-
-            <div className="transaction-list">
-                {filteredTransactions.length === 0 ? (
-                    <div className="empty-state">
-                        <p>Không tìm thấy giao dịch nào.</p>
-                    </div>
-                ) : (
-                    filteredTransactions.map((tx) => (
-                        <div className="list-item" key={tx._id}>
-                            <div className="item-left">
-                                <div className={`item-avatar ${tx.type === 'INCOME' ? 'income' : 'expense'}`}>
-                                    {tx.type === 'INCOME' ? <UserOutlined /> : <ShoppingOutlined />}
-                                </div>
-                                <div className="item-details">
-                                    <h4 className="item-title">{tx.note || tx.categoryId || 'Giao dịch'}</h4>
-                                    <p className="item-subtitle">
-                                        {tx.type === 'INCOME' ? 'Nhận tiền' : 'Chi tiêu'} • {formatDate(tx.date)}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="item-right">
-                                <span className={`item-amount ${tx.type === 'INCOME' ? 'positive' : 'negative'}`}>
-                                    {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
-                                </span>
-                            </div>
-                        </div>
-                    ))
-                )}
-            </div>
             <div style={{ height: '100px' }}></div>
         </div>
     );

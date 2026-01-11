@@ -1,0 +1,154 @@
+@import '../../styles/variables.scss';
+
+.wallet-drawer {
+
+    .ant-drawer-content-wrapper {
+        box-shadow: none !important;
+        height: auto !important;
+        max-height: 80vh;
+    }
+
+    .ant-drawer-content {
+        border-top-left-radius: 24px;
+        border-top-right-radius: 24px;
+        background-color: #fff;
+    }
+
+    .ant-drawer-header {
+        border-bottom: none;
+        padding: 20px 24px 0;
+
+        .ant-drawer-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: $text-primary;
+            text-align: center;
+        }
+
+        .ant-drawer-close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            padding: 0;
+        }
+    }
+
+    .ant-drawer-body {
+        padding: 0 24px 24px;
+
+        /* Hide scrollbar for cleaner look but allow scroll */
+        &::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: #f0f0f0;
+            border-radius: 2px;
+        }
+    }
+
+    .ant-form-item {
+        margin-bottom: 12px;
+
+        .ant-form-item-label {
+            padding-bottom: 4px;
+
+            label {
+                font-size: 13px;
+                color: $text-secondary;
+                font-weight: 500;
+            }
+        }
+
+        .ant-input,
+        .ant-input-number,
+        .ant-picker,
+        .ant-select-selector {
+            height: 36px !important; // Uniform height
+            border-radius: 6px !important;
+            border-color: #f0f0f0;
+            background: #fafafa;
+            transition: all 0.2s;
+            box-shadow: none !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+
+            &:hover,
+            &:focus,
+            &.ant-input-focused {
+                border-color: $primary-color;
+                background: #fff;
+            }
+
+            input {
+                height: 100% !important;
+            }
+        }
+
+        input.ant-input {
+            display: inline-block !important;
+            line-height: normal;
+        }
+
+        .ant-select-selection-item {
+            line-height: 50px !important; // Vertically center selected text
+        }
+
+        .ant-picker-input>input {
+            font-size: 14px;
+        }
+
+        .ant-input-affix-wrapper {
+            border-radius: 12px;
+            padding: 8px 11px;
+            border-color: #f0f0f0;
+            background: #fafafa;
+
+            .ant-input {
+                background: transparent;
+                padding: 0;
+            }
+
+            &:hover,
+            &:focus-within {
+                border-color: $primary-color;
+                background: #fff;
+            }
+        }
+
+        .ant-select-selection-item {
+            font-weight: 500;
+        }
+    }
+
+    .section-title {
+        color: $primary-color;
+        font-weight: 700;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        &::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #f0f0f0;
+        }
+    }
+
+    .submit-btn {
+        height: 48px;
+        border-radius: 14px;
+        font-weight: 600;
+        font-size: 16px;
+        margin-top: 12px;
+        box-shadow: 0 4px 12px rgba($primary-color, 0.3);
+    }
+}

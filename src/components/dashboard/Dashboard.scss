@@ -2,9 +2,7 @@
 @import '../../styles/mixins.scss';
 
 .dashboard-content {
-    padding: 24px;
-    background-color: #ffffff;
-    color: #1f2c33;
+    padding: 10px;
     height: calc(100vh - 104px);
 
     .dashboard-header-search {
@@ -135,11 +133,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+
 
             h2 {
-                font-size: 22px;
-                font-weight: 700;
+                font-size: 18px;
+                font-weight: 500;
                 margin: 0;
             }
 
@@ -229,11 +227,11 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
+        margin: 10px;
 
         h2 {
-            font-size: 20px;
-            font-weight: 800; // Extra bold
+            font-size: 16px;
+            font-weight: 600;
             margin: 0;
             color: #000000; // Pure black
         }
@@ -271,7 +269,6 @@
             &.active {
                 background: #ffffff;
                 color: #000000; // Black
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); // Stronger shadow
                 font-weight: 700;
             }
 
@@ -284,16 +281,19 @@
     .transaction-list {
         display: flex;
         flex-direction: column;
-        gap: 4px; // More spacing
+        gap: 10px; // More spacing
         max-height: 275px;
         overflow-y: auto;
         padding: 6px;
 
         .list-item {
+            background: #faf9f9;
+            border-radius: 10px;
+            padding: 10px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 4px 0;
+            cursor: pointer;
 
             .item-left {
                 display: flex;
@@ -331,25 +331,28 @@
 
                     .item-title {
                         font-size: 14px;
-                        font-weight: 600; // Bold title
-                        color: #000000; // Black
-                        margin: 0;
+                        font-weight: 600;
+                        color: $text-primary;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        max-width: 200px;
                     }
 
                     .item-subtitle {
-                        font-size: 12px;
-                        color: #8c8c8c; // Darker gray
+                        margin-top: 6px;
+                        font-size: 10px;
+                        color: #8C98A4;
                         font-weight: 500;
-                        font-style: italic;
-                        margin: 0;
                     }
                 }
             }
 
             .item-right {
                 .item-amount {
-                    font-size: 14px;
-                    font-weight: 600; // Extra bold amount
+                    font-size: 13px;
+                    font-weight: 600;
+                    letter-spacing: -0.4px;
 
                     &.positive {
                         color: #00c853; // Green
@@ -362,4 +365,15 @@
             }
         }
     }
+}
+
+.dashboard-loading-container {
+    height: calc(100vh - 104px);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    color: $primary-color;
 }

@@ -7,7 +7,13 @@ export const V1 = '/v1';
 export const API_AUTH = {
     login: '/auth/login',
     register: '/auth/register',
-    profile: `${V1}/users/profile`,
+    profile: `${V1}/users/me`, // Updated to match user spec
+};
+
+// User API Paths
+export const API_USER = {
+    profile: `${V1}/users/me`,
+    changePassword: `${V1}/users/change-password`,
 };
 
 // Category API Paths
@@ -52,4 +58,7 @@ export const API_ANALYTICS = {
     monthlyOverview: `${V1}/analytics/monthly-overview`,
     debtStatus: `${V1}/analytics/debt-status`,
     creditCardFees: `${V1}/analytics/credit-card-fees`,
+    cardsSummary: `${V1}/transactions/stats/cards/summary`,
+    categorySpending: (id: string) => `${V1}/transactions/stats/wallet/${id}/overview`,
+    transactionsMonthly: `${V1}/analytics/transactions-monthly`,
 };

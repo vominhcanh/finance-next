@@ -5,7 +5,7 @@ import { useMutateDebt, useQueryDebt } from '@/queryHooks/debt';
 import { useQueryWallets } from '@/queryHooks/wallet';
 import { DebtType, InstallmentStatus } from '@/types/debt.type';
 import { formatCurrency } from '@utils/format.utils';
-import { SaveOutlined, LeftOutlined } from '@ant-design/icons';
+import { SaveOutlined, LeftOutlined, ArrowRightOutlined, PlusOutlined, FileAddOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import './DebtForm.scss';
 
@@ -236,34 +236,27 @@ export const DebtFormParam = ({ id }: DebtFormProps) => {
 
     if (isLoading) {
         return (
-            <div className="debt-form-container" >
-                <Spin size="large" />
+            <div className="dashboard-loading-container">
+                <Spin size="small" />
+                <div className="loading-text">Đang tải dữ liệu...</div>
             </div>
         );
     }
 
     return (
         <div className="debt-form-container">
-            <div className="form-header">
-                <h2 className="page-title">
+            <div className="custom-header">
+                <div className="icon-btn back-btn" onClick={() => navigate({ to: '/debts' })}>
+                    <ArrowRightOutlined rotate={180} />
+                </div>
+                <div className="page-title"> {isCreate ? 'Thêm mới khoản vay' : 'Chi tiết khoản vay'}</div>
+                <div className="icon-btn add-btn" onClick={() => navigate({ to: '/debts/create' })}>
                     <Button
                         type="text"
-                        size="small"
-                        icon={<LeftOutlined />}
-                        className="back-btn"
-                        onClick={() => navigate({ to: '/debts' })}
-                    />
-                    {isCreate ? 'Thêm mới khoản vay' : 'Chi tiết khoản vay'}
-                </h2>
-                <div className="header-actions">
-                    <Button
-                        type="primary"
-                        icon={<SaveOutlined />}
+                        icon={isCreate ? <FileAddOutlined /> : <SaveOutlined />}
                         loading={create.isPending || update.isPending}
                         onClick={form.submit}
-                    >
-                        {isCreate ? 'Lưu mới' : 'Cập nhật'}
-                    </Button>
+                    />
                 </div>
             </div>
 

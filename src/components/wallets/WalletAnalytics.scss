@@ -1,0 +1,84 @@
+@import '../../styles/variables.scss';
+
+.wallet-analytics-container {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: $shadow-sm;
+    margin-bottom: 24px;
+
+    .analytics-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .loading-container {
+        height: 250px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .chart-content {
+        position: relative;
+    }
+
+    .custom-chart-tooltip {
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 8px;
+        padding: 8px 12px;
+        color: #fff;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+        .label {
+            margin: 0;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .value {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+    }
+
+    .donut-center-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+
+        .total-label {
+            font-size: 14px;
+            color: #8c98a4;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+
+        .total-amount {
+            font-size: 22px;
+            font-weight: 800;
+            color: $primary-color;
+            line-height: 1.2;
+        }
+    }
+
+    .empty-text {
+        text-align: center;
+        color: $text-secondary;
+        font-size: 13px;
+        margin-top: 10px;
+    }
+}

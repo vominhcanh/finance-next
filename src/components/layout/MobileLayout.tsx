@@ -20,7 +20,7 @@ export const MobileLayout = ({ children }: MobileLayoutProps) => {
                         <input type="text" placeholder="Search anything..." className="search-input" />
                         <div className="search-actions">
                             <div className="separator"></div>
-                            <FilterOutlined className="filter-icon" />
+                            <FilterOutlined className="filter-icon" style={{ color: '#ccc' }} />
                         </div>
                     </div>
                 </div>

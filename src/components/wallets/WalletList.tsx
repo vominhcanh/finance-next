@@ -1,130 +1,193 @@
 import { useState, useEffect } from 'react';
-import { Card, Typography, Tag, Button, Spin } from 'antd';
-import { PlusOutlined, BankOutlined, WalletOutlined, CreditCardOutlined } from '@ant-design/icons';
-import { MobileLayout } from '@components/layout/MobileLayout';
-import { PrivateRoute } from '@components/layout/PrivateRoute';
-import { formatCurrency } from '@utils/format.utils';
+import { Spin, Button, message } from 'antd';
+import {
+    EyeOutlined,
+    EyeInvisibleOutlined,
+    WifiOutlined,
+    MoreOutlined,
+    PlusOutlined,
+    ArrowRightOutlined
+} from '@ant-design/icons';
 import { walletApi } from '@api/wallet.api';
-import { WalletData } from '@/types/wallet.type';
+import { transactionApi } from '@api/transaction.api';
+import { analyticsApi, MonthlyOverview } from '@api/analytics.api';
+import { WalletData, WalletType, WalletForm } from '@/types/wallet.type';
+import { TransactionData } from '@/types/transaction.type';
+import { formatCurrency, formatDate } from '@utils/format.utils';
+import { WalletAnalytics } from './WalletAnalytics';
+import { WalletModal } from './WalletModal';
+import './WalletList.scss';
 
-const { Title, Text } = Typography;
+const MOCK_CARD_EXPIRY = '12/2035';
+const MOCK_INCOME_TARGET = 15000000; // Mock target for now
 
 export const WalletList = () => {
     const [loading, setLoading] = useState(true);
     const [wallets, setWallets] = useState<WalletData[]>([]);
+    const [transactions, setTransactions] = useState<TransactionData[]>([]);
+    const [monthlyStats, setMonthlyStats] = useState<MonthlyOverview | null>(null);
+    const [showBalance, setShowBalance] = useState(true);
+
+    // Modal State
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingWallet, setEditingWallet] = useState<WalletData | null>(null);
+    const [modalLoading, setModalLoading] = useState(false);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [walletsData, transactionsResp, analyticsData] = await Promise.all([
+                walletApi.getAll(),
+                transactionApi.getAll({ limit: 5 }),
+                analyticsApi.getMonthlyOverview()
+            ]);
+
+            setWallets(Array.isArray(walletsData) ? walletsData : []);
+            setTransactions(transactionsResp.data || []);
+            setMonthlyStats(analyticsData);
+        } catch (error) {
+            console.error('Failed to fetch wallet dashboard data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchWallets = async () => {
-            try {
-                setLoading(true);
-                const data = await walletApi.getAll();
-                setWallets(data);
-            } catch (error) {
-                console.error('Error fetching wallets:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchWallets();
+        fetchData();
     }, []);
 
-    const getWalletIcon = (type: string) => {
-        switch (type) {
-            case 'BANK':
-                return <BankOutlined style={{ fontSize: '24px', color: '#1890ff' }} />;
-            case 'CREDIT_CARD':
-                return <CreditCardOutlined style={{ fontSize: '24px', color: '#722ed1' }} />;
-            default:
-                return <WalletOutlined style={{ fontSize: '24px', color: '#52c41a' }} />;
+    const totalBalance = wallets.reduce((sum, wallet) => sum + (wallet.balance || 0), 0);
+
+    const getCardThemeClass = (index: number) => {
+        return `card-theme-${index % 3}`;
+    };
+
+    // Handlers
+    const handleAddWallet = () => {
+        setEditingWallet(null);
+        setIsModalOpen(true);
+    };
+
+    const handleEditWallet = (wallet: WalletData) => {
+        setEditingWallet(wallet);
+        setIsModalOpen(true);
+    };
+
+    const handleModalSubmit = async (values: WalletForm) => {
+        try {
+            setModalLoading(true);
+            if (editingWallet) {
+                await walletApi.update(editingWallet._id, values);
+                message.success('Cập nhật ví thành công');
+            } else {
+                await walletApi.create(values);
+                message.success('Thêm ví mới thành công');
+            }
+            setIsModalOpen(false);
+            fetchData(); // Refresh list
+        } catch (error) {
+            console.error('Submit wallet error:', error);
+            message.error('Có lỗi xảy ra, vui lòng thử lại');
+        } finally {
+            setModalLoading(false);
         }
     };
 
     if (loading) {
         return (
-            <PrivateRoute>
-                <MobileLayout>
-                    <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
-                        <Spin size="large" />
-                    </div>
-                </MobileLayout>
-            </PrivateRoute>
+            <div className="dashboard-loading-container">
+                <Spin size="small" />
+                <div className="loading-text">Đang tải dữ liệu...</div>
+            </div>
         );
     }
 
     return (
-        <PrivateRoute>
-            <MobileLayout>
-                <div>
-                    <Title level={3} style={{ marginBottom: '16px' }}>
-                        Ví của tôi
-                    </Title>
+        <div className="wallet-management-container">
+            <div className="custom-header">
+                <div className="icon-btn back-btn" onClick={() => window.history.back()}>
+                    <ArrowRightOutlined rotate={180} />
+                </div>
+                <div className="page-title">Quản lý ví</div>
+                <Button type="text" className="icon-btn add-btn" onClick={handleAddWallet}>
+                    <PlusOutlined />
+                </Button>
+            </div>
 
-                    {!wallets || wallets.length === 0 ? (
-                        <Card>
-                            <Text type="secondary">Chưa có ví nào</Text>
-                        </Card>
-                    ) : (
-                        wallets.map((wallet) => (
-                            <Card key={wallet._id} style={{ marginBottom: '16px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                                    {getWalletIcon(wallet.type)}
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <div>
-                                                <Text strong style={{ fontSize: '16px' }}>
-                                                    {wallet.name}
-                                                </Text>
-                                                <br />
-                                                <Tag color={wallet.type === 'CREDIT_CARD' ? 'purple' : 'blue'}>
-                                                    {wallet.type === 'CASH' && 'Tiền mặt'}
-                                                    {wallet.type === 'BANK' && 'Ngân hàng'}
-                                                    {wallet.type === 'SAVING' && 'Tiết kiệm'}
-                                                    {wallet.type === 'CREDIT_CARD' && 'Thẻ tín dụng'}
-                                                </Tag>
-                                            </div>
-                                            <div style={{ textAlign: 'right' }}>
-                                                <Text
-                                                    strong
-                                                    style={{
-                                                        fontSize: '18px',
-                                                        color: wallet.balance < 0 ? '#ff4d4f' : '#52c41a',
-                                                    }}
-                                                >
-                                                    {formatCurrency(wallet.balance)}
-                                                </Text>
-                                                {wallet.type === 'CREDIT_CARD' && wallet.creditLimit && (
-                                                    <>
-                                                        <br />
-                                                        <Text type="secondary" style={{ fontSize: '12px' }}>
-                                                            Hạn mức: {formatCurrency(wallet.creditLimit)}
-                                                        </Text>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
+            {/* 1. Total Balance Section */}
+            <div className="total-balance-section">
+                <div className="label">Tổng tài sản</div>
+                <div className="balance-row">
+                    <div className="amount">
+                        {showBalance ? formatCurrency(totalBalance, 'VND') : '******'}
+                    </div>
+                </div>
+            </div>
+
+            {/* 2. Wallet Cards Carousel */}
+            <div className="wallet-carousel">
+                {wallets.length === 0 ? (
+                    <div className="wallet-card card-theme-0" onClick={handleAddWallet} style={{ cursor: 'pointer' }}>
+                        <div className="card-header">
+                            <span className="card-type">Chưa có ví</span>
+                        </div>
+                        <div className="card-footer">
+                            <div className="balance-info">
+                                <div className="info-value">Thêm ví mới</div>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    wallets.map((wallet, index) => (
+                        <div
+                            key={wallet._id}
+                            className={`wallet-card ${getCardThemeClass(index)}`}
+                            onClick={() => handleEditWallet(wallet)}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <div className="card-header">
+                                <div className="chip-icon">
+                                    {wallet.type === WalletType.CREDIT_CARD || wallet.type === WalletType.BANK ? '💳' : '💵'}
+                                </div>
+                                <div className="card-type">
+                                    {wallet.type === WalletType.CREDIT_CARD ? 'Thẻ Tín Dụng' : wallet.type === WalletType.BANK ? 'Ngân Hàng' : 'Tiền Mặt'}
+                                    <WifiOutlined rotate={90} />
+                                </div>
+                            </div>
+
+                            <div className="card-center" style={{ flex: 1 }}>
+                                <div style={{ marginTop: 20, fontSize: 16, fontWeight: 600 }}>{wallet.name}</div>
+                                <div style={{ fontSize: 14, opacity: 0.8 }}>{wallet.bankName}</div>
+                            </div>
+
+                            <div className="card-footer">
+                                <div className="balance-info">
+                                    <div className="info-label">Số dư hiện tại</div>
+                                    <div className="info-value">
+                                        {showBalance ? formatCurrency(wallet.balance, 'VND') : '****'}
+                                        {showBalance ? (
+                                            <EyeOutlined className="eye-icon" onClick={(e) => { e.stopPropagation(); setShowBalance(false); }} />
+                                        ) : (
+                                            <EyeInvisibleOutlined className="eye-icon" onClick={(e) => { e.stopPropagation(); setShowBalance(true); }} />
+                                        )}
                                     </div>
                                 </div>
-                            </Card>
-                        ))
-                    )}
-
-                    <Button
-                        type="primary"
-                        shape="circle"
-                        size="large"
-                        icon={<PlusOutlined />}
-                        style={{
-                            position: 'fixed',
-                            bottom: '80px',
-                            right: '24px',
-                            width: '56px',
-                            height: '56px',
-                            boxShadow: '0 4px 12px rgba(24, 144, 255, 0.4)',
-                        }}
-                    />
-                </div>
-            </MobileLayout>
-        </PrivateRoute>
+                                <div className="expiry-info">
+                                    {wallet.expirationDate ? formatDate(wallet.expirationDate as string) : (wallet.type === WalletType.CREDIT_CARD ? MOCK_CARD_EXPIRY : '')}
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
+            <WalletAnalytics />
+            <WalletModal
+                open={isModalOpen}
+                onCancel={() => setIsModalOpen(false)}
+                onSubmit={handleModalSubmit}
+                initialValues={editingWallet}
+                loading={modalLoading}
+            />
+        </div>
     );
 };
