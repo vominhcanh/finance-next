@@ -250,14 +250,12 @@ export const DebtFormParam = ({ id }: DebtFormProps) => {
                     <ArrowRightOutlined rotate={180} />
                 </div>
                 <div className="page-title"> {isCreate ? 'Thêm mới khoản vay' : 'Chi tiết khoản vay'}</div>
-                <div className="icon-btn add-btn" onClick={() => navigate({ to: '/debts/create' })}>
-                    <Button
-                        type="text"
-                        icon={isCreate ? <FileAddOutlined /> : <SaveOutlined />}
-                        loading={create.isPending || update.isPending}
-                        onClick={form.submit}
-                    />
-                </div>
+                <Button
+                    type="text"
+                    icon={isCreate ? <FileAddOutlined /> : <SaveOutlined />}
+                    loading={create.isPending || update.isPending}
+                    onClick={form.submit}
+                />
             </div>
 
             <Tabs

@@ -215,3 +215,14 @@
         }
     }
 }
+
+.dashboard-loading-container {
+    height: calc(100vh - 104px);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    color: $primary-color;
+}
