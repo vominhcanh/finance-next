@@ -156,6 +156,7 @@
                 .icon-wrapper {
                     width: 48px;
                     height: 48px;
+                    min-width: 48px;
                     border-radius: 50%;
                     display: flex;
                     align-items: center;
@@ -182,9 +183,6 @@
                         font-weight: 600;
                         color: $text-primary;
                         overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
-                        max-width: 225px;
                     }
 
                     .time {
