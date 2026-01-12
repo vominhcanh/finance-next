@@ -1,18 +1,14 @@
 
-import { useQueryTransactions } from '@/queryHooks/useTransaction';
 import { useQueryCategories } from '@/queryHooks/useCategory';
+import { useMutateTransaction, useQueryTransactions } from '@/queryHooks/useTransaction';
 import { CategoryData } from '@/types/category.type';
 import { TransactionData, TransactionType } from '@/types/transaction.type';
+import { ArrowRightOutlined, PlusOutlined, ShoppingOutlined } from '@ant-design/icons';
 import { formatCurrency } from '@utils/format.utils';
-import { PlusOutlined, ShoppingOutlined, ArrowRightOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons';
-import { Spin, Input, Empty, Drawer } from 'antd';
-import { MobileLayout } from '@components/layout/MobileLayout';
-import { PrivateRoute } from '@components/layout/PrivateRoute';
+import { Drawer, Empty } from 'antd';
 import dayjs from 'dayjs';
 import { useMemo, useState } from 'react';
-import { useMutateTransaction } from '@/queryHooks/useTransaction';
 import { TransactionForm } from './TransactionForm';
-import { TransactionForm as ITransactionForm } from '@/types/transaction.type';
 import './TransactionList.scss';
 
 export const TransactionList = () => {
@@ -128,7 +124,7 @@ export const TransactionList = () => {
             {/* Section 3: List */}
             <div className="list-section">
                 {Object.keys(groupedTransactions).length === 0 ? (
-                    <Empty description="No transactions found" style={{ marginTop: 50 }} />
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không có giao dịch" style={{ marginTop: 50 }} />
                 ) : (
                     Object.keys(groupedTransactions).map((date) => (
                         <div key={date} className="date-group">

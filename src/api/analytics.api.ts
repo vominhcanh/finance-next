@@ -29,12 +29,27 @@ export interface MonthlyTransactionItem {
     expense: number;
 }
 
-// Derived type for UI
-export interface MonthlyOverview {
-    totalIncome: number;
+export interface MonthlyOverviewStats {
+    totalWalletBalance: number;
     totalExpense: number;
-    balance: number;
+    netBalance: number;
+    totalWallets: number;
 }
+
+export interface MonthlyOverviewTrends {
+    totalWalletBalance: number;
+    totalExpense: number;
+    netBalance: number;
+    totalWallets: number;
+}
+
+export interface MonthlyOverviewResponse {
+    stats: MonthlyOverviewStats;
+    trends: MonthlyOverviewTrends;
+}
+
+// Derived type for UI (can be same as Response or simplified)
+export interface MonthlyOverview extends MonthlyOverviewResponse { }
 
 export interface CardSummaryItem {
     _id: string; // Wallet ID
@@ -64,19 +79,22 @@ export interface CategoryBreakdownItem {
 
 export const analyticsApi = {
     async getMonthlyOverview(): Promise<MonthlyOverview> {
-        const response = await apiClient.get<ApiResponse<MonthlyOverviewItem[]>>(API_ANALYTICS.monthlyOverview);
-        const data = response.data?.data || [];
-
-        const incomeItem = data.find(item => item._id === 'INCOME');
-        const expenseItem = data.find(item => item._id === 'EXPENSE');
-
-        const totalIncome = incomeItem?.total || 0;
-        const totalExpense = expenseItem?.total || 0;
+        const response = await apiClient.get<ApiResponse<MonthlyOverview>>(API_ANALYTICS.monthlyOverview);
+        const data = response.data?.data;
 
         return {
-            totalIncome,
-            totalExpense,
-            balance: totalIncome - totalExpense
+            stats: {
+                totalWalletBalance: data?.stats?.totalWalletBalance || 0,
+                totalExpense: data?.stats?.totalExpense || 0,
+                netBalance: data?.stats?.netBalance || 0,
+                totalWallets: data?.stats?.totalWallets || 0,
+            },
+            trends: {
+                totalWalletBalance: data?.trends?.totalWalletBalance || 0,
+                totalExpense: data?.trends?.totalExpense || 0,
+                netBalance: data?.trends?.netBalance || 0,
+                totalWallets: data?.trends?.totalWallets || 0,
+            }
         };
     },
 

@@ -19,7 +19,6 @@ import './WalletAnalytics.scss';
 
 const { Title, Text } = Typography;
 
-const COLORS = ['#0a55eb', '#00c853', '#faad14', '#ff4d4f', '#722ed1', '#13c2c2', '#f5222d'];
 
 export const WalletAnalytics = ({ activeWalletId }: { activeWalletId?: string | null }) => {
     const [loading, setLoading] = useState(true);
@@ -152,7 +151,6 @@ export const WalletAnalytics = ({ activeWalletId }: { activeWalletId?: string | 
                                     </Bar>
                                 </BarChart>
                             </ResponsiveContainer>
-                            {summaryData.length === 0 && <div className="empty-text">Chưa có dữ liệu chi tiêu</div>}
                         </div>
                     ) : (
                         <div style={{ width: '100%', height: 280, position: 'relative' }}>
