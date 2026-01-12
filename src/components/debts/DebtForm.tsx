@@ -150,13 +150,13 @@ export const DebtFormParam = ({ id }: DebtFormProps) => {
             <Row gutter={[16, 0]}>
                 <Col span={24}>
                     <Form.Item name="partnerName" label="Tên đối tác" rules={[{ required: true }]}>
-                        <Input size="small" placeholder="Ví dụ: Ngân hàng ABC..." />
+                        <Input placeholder="Ví dụ: Ngân hàng ABC..." />
                     </Form.Item>
                 </Col>
                 <Col span={24}>
                     <Form.Item name="totalAmount" label="Tổng số tiền" rules={[{ required: true }]}>
                         <InputNumber
-                            size="small"
+
                             style={{ width: '100%' }}
                             formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                             parser={value => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
@@ -168,7 +168,7 @@ export const DebtFormParam = ({ id }: DebtFormProps) => {
 
                 <Col span={12}>
                     <Form.Item name="type" label="Loại nợ" rules={[{ required: true }]}>
-                        <Select size="small">
+                        <Select  >
                             <Option value={DebtType.LOAN}>Đi vay</Option>
                             <Option value={DebtType.LEND}>Cho vay</Option>
                         </Select>
@@ -178,7 +178,7 @@ export const DebtFormParam = ({ id }: DebtFormProps) => {
                 <Col span={12}>
                     <Form.Item name="isInstallment" label="Hình thức trả">
                         <Select
-                            size="small"
+
                             disabled={!isCreate} // Disable changing structure after creation
                             options={[
                                 { label: 'Trả 1 lần', value: 0 },
@@ -198,7 +198,7 @@ export const DebtFormParam = ({ id }: DebtFormProps) => {
                             tooltip="Ngày bắt đầu trả nợ. Các kỳ trong quá khứ sẽ được đánh dấu là Đã Trả."
                         >
                             <DatePicker
-                                size="small"
+
                                 style={{ width: '100%' }}
                                 format="DD/MM/YYYY"
                                 disabled={!isCreate} // Cannot change start date after creation
@@ -214,18 +214,18 @@ export const DebtFormParam = ({ id }: DebtFormProps) => {
                     <Row gutter={[16, 0]}>
                         <Col span={12}>
                             <Form.Item name="totalMonths" label="Tổng số tháng" rules={[{ required: true }]}>
-                                <InputNumber size="small" style={{ width: '100%' }} min={1} disabled={!isCreate} />
+                                <InputNumber style={{ width: '100%' }} min={1} disabled={!isCreate} />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item name="paymentDate" label="Ngày trả (1-31)" rules={[{ required: true }]}>
-                                <InputNumber size="small" style={{ width: '100%' }} min={1} max={31} />
+                                <InputNumber style={{ width: '100%' }} min={1} max={31} />
                             </Form.Item>
                         </Col>
                         <Col span={24}>
                             <Form.Item name="monthlyPayment" label="Số tiền/tháng">
                                 <InputNumber
-                                    size="small"
+
                                     style={{ width: '100%' }}
                                     formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                     parser={value => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
@@ -328,7 +328,7 @@ export const DebtFormParam = ({ id }: DebtFormProps) => {
     if (isLoading) {
         return (
             <div className="dashboard-loading-container">
-                <Spin size="small" />
+                <Spin />
                 <div className="loading-text">Đang tải dữ liệu...</div>
             </div>
         );

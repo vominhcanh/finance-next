@@ -66,6 +66,7 @@ export const PayStatementModal = ({ open, onClose, wallet, wallets, onSuccess }:
             open={open}
             onClose={onClose}
             placement="bottom"
+            height="auto"
             rootClassName="pay-statement-drawer"
             destroyOnClose
         >

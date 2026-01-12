@@ -62,20 +62,20 @@ export const EditProfileDrawer = ({ open, onClose, user }: EditProfileDrawerProp
                     label="Họ và tên"
                     rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}
                 >
-                    <Input placeholder="Nhập họ và tên" size="small" />
+                    <Input placeholder="Nhập họ và tên" />
                 </Form.Item>
 
                 <Form.Item name="dateOfBirth" label="Ngày sinh">
                     <DatePicker
                         style={{ width: '100%' }}
                         format="DD/MM/YYYY"
-                        size="small"
+
                         placeholder="Chọn ngày sinh"
                     />
                 </Form.Item>
 
                 <Form.Item name="gender" label="Giới tính">
-                    <Select size="small" placeholder="Chọn giới tính">
+                    <Select placeholder="Chọn giới tính">
                         <Select.Option value={Gender.MALE}>Nam</Select.Option>
                         <Select.Option value={Gender.FEMALE}>Nữ</Select.Option>
                         <Select.Option value={Gender.OTHER}>Khác</Select.Option>

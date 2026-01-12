@@ -47,7 +47,7 @@ export const ChangePasswordDrawer = ({ open, onClose }: ChangePasswordDrawerProp
                     label="Mật khẩu hiện tại"
                     rules={[{ required: true, message: 'Vui lòng nhập mật khẩu cũ' }]}
                 >
-                    <Input.Password placeholder="Nhập mật khẩu hiện tại" size="small" />
+                    <Input.Password placeholder="Nhập mật khẩu hiện tại" />
                 </Form.Item>
 
                 <Form.Item
@@ -58,7 +58,7 @@ export const ChangePasswordDrawer = ({ open, onClose }: ChangePasswordDrawerProp
                         { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự' }
                     ]}
                 >
-                    <Input.Password placeholder="Nhập mật khẩu mới" size="small" />
+                    <Input.Password placeholder="Nhập mật khẩu mới" />
                 </Form.Item>
 
                 <Form.Item
@@ -77,7 +77,7 @@ export const ChangePasswordDrawer = ({ open, onClose }: ChangePasswordDrawerProp
                         }),
                     ]}
                 >
-                    <Input.Password placeholder="Nhập lại mật khẩu mới" size="small" />
+                    <Input.Password placeholder="Nhập lại mật khẩu mới" />
                 </Form.Item>
 
                 <Button

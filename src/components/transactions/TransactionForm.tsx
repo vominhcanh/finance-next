@@ -1,11 +1,11 @@
 
-import React, { useEffect } from 'react';
-import { Form, Input, InputNumber, Select, DatePicker, Segmented, Button, Row, Col } from 'antd';
-import { CategorySelect } from '@components/common/CategorySelect';
 import { useQueryWallets } from '@/queryHooks/wallet';
-import { TransactionType, TransactionForm as ITransactionForm } from '@/types/transaction.type';
 import { CategoryType } from '@/types/category.type';
+import { TransactionForm as ITransactionForm, TransactionType } from '@/types/transaction.type';
+import { CategorySelect } from '@components/common/CategorySelect';
+import { Button, DatePicker, Form, Input, InputNumber, Segmented, Select } from 'antd';
 import dayjs from 'dayjs';
+import React, { useEffect } from 'react';
 import './TransactionForm.scss';
 
 interface TransactionFormProps {
@@ -84,7 +84,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, isLo
                     formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     parser={(value) => value!.replace(/\$\s?|(,*)/g, '')}
                     placeholder="0"
-                    size="small"
+
                     suffix="VND"
                 />
             </Form.Item>
@@ -95,7 +95,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, isLo
                 label={type === TransactionType.TRANSFER ? "Từ ví" : "Ví"}
                 rules={[{ required: true, message: 'Vui lòng chọn ví' }]}
             >
-                <Select placeholder="Chọn ví" size="small">
+                <Select placeholder="Chọn ví"  >
                     {wallets?.map(w => (
                         <Select.Option key={w._id} value={w._id}>{w.name}</Select.Option>
                     ))}
@@ -122,7 +122,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, isLo
                         }),
                     ]}
                 >
-                    <Select placeholder="Chọn ví đích" size="small">
+                    <Select placeholder="Chọn ví đích"  >
                         {wallets?.map(w => (
                             <Select.Option key={w._id} value={w._id}>{w.name}</Select.Option>
                         ))}

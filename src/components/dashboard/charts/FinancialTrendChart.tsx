@@ -21,7 +21,7 @@ export const FinancialTrendChart = () => {
             extra={
                 <Select
                     defaultValue="6m"
-                    size="small"
+
                     onChange={(val) => setPeriod(val as any)}
                     options={[
                         { value: '6m', label: '6 tháng' },

@@ -77,12 +77,12 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
                             label="Tên Ví"
                             rules={[{ required: true, message: 'Vui lòng nhập tên ví' }]}
                         >
-                            <Input placeholder="Ví dụ: Tiền mặt, VCB Priority..." size="small" />
+                            <Input placeholder="Ví dụ: Tiền mặt, VCB Priority..." />
                         </Form.Item>
                     </Col>
                     <Col span={4}>
                         <Form.Item name="color" label="Màu">
-                            <ColorPicker size="small" />
+                            <ColorPicker />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -94,7 +94,7 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
                             label="Loại Ví"
                             rules={[{ required: true, message: 'Vui lòng chọn loại ví' }]}
                         >
-                            <Select size="small">
+                            <Select  >
                                 <Option value={WalletType.CASH}>Tiền Mặt</Option>
                                 <Option value={WalletType.BANK}>Ngân Hàng</Option>
                                 <Option value={WalletType.DEBIT_CARD}>Thẻ Ghi Nợ</Option>
@@ -105,7 +105,7 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
                     </Col>
                     <Col span={12}>
                         <Form.Item name="status" label="Trạng Thái">
-                            <Select size="small">
+                            <Select  >
                                 <Option value={WalletStatus.ACTIVE}>Hoạt Động</Option>
                                 <Option value={WalletStatus.LOCKED}>Đã Khóa</Option>
                             </Select>
@@ -122,7 +122,7 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
                         >
                             <InputNumber
                                 style={{ width: '100%' }}
-                                size="small"
+
                                 formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                 parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
                                 suffix="VND"
@@ -139,7 +139,7 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
                                 <Form.Item name="bankId" label="Ngân Hàng Liên Kết">
                                     <Select
                                         placeholder="Chọn ngân hàng"
-                                        size="small"
+
                                         showSearch
                                         popupClassName="bank-select-dropdown"
                                         optionFilterProp="children"
@@ -173,7 +173,7 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
                             </Col>
                             <Col span={12}>
                                 <Form.Item name="cardType" label="Loại Thẻ">
-                                    <Select allowClear size="small" placeholder="Chọn loại">
+                                    <Select allowClear placeholder="Chọn loại">
                                         <Option value="VISA">VISA</Option>
                                         <Option value="MASTER">MasterCard</Option>
                                         <Option value="JCB">JCB</Option>

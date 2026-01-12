@@ -120,7 +120,7 @@ export const WalletList = () => {
     if (loading) {
         return (
             <div className="dashboard-loading-container">
-                <Spin size="small" />
+                <Spin />
                 <div className="loading-text">Đang tải dữ liệu...</div>
             </div>
         );

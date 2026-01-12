@@ -59,7 +59,7 @@ export const CategorySelect: React.FC<CategorySelectProps> = ({ value, onChange,
             placeholder={placeholder || 'Select Category'}
             value={value}
             onChange={onChange}
-            size="small"
+
             // @ts-ignore
             popupRender={(menu) => (
                 <>
@@ -70,12 +70,12 @@ export const CategorySelect: React.FC<CategorySelectProps> = ({ value, onChange,
                             placeholder="Nhập danh mục"
                             ref={inputRef}
                             value={name}
-                            size="small"
+
                             onChange={onNameChange}
                             onKeyDown={(e) => e.stopPropagation()}
                             style={{ flex: 7 }}
                         />
-                        <Button size="small" type="primary" icon={<PlusOutlined />} onClick={addItem} loading={isPending} style={{ flex: 3 }}>
+                        <Button type="primary" icon={<PlusOutlined />} onClick={addItem} loading={isPending} style={{ flex: 3 }}>
                             Tạo
                         </Button>
                     </div>

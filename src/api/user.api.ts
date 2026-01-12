@@ -1,7 +1,7 @@
+import { ChangePasswordForm, UpdateProfileForm, UserData } from '@/types/user.type'; // Check import path after creation
 import apiClient from './config/apiClient';
-import { API_USER } from './config/apiPath';
 import { ApiResponse } from './config/apiConfig.type';
-import { UserData, UpdateProfileForm, ChangePasswordForm } from '@/types/user.type'; // Check import path after creation
+import { API_USER } from './config/apiPath';
 
 export const userApi = {
     async getProfile(): Promise<UserData> {
@@ -16,5 +16,9 @@ export const userApi = {
 
     async changePassword(data: ChangePasswordForm): Promise<void> {
         await apiClient.post<ApiResponse<void>>(API_USER.changePassword, data);
+    },
+
+    async updateMonthlyLimit(amount: number): Promise<void> {
+        await apiClient.patch<ApiResponse<void>>(API_USER.monthlyLimit, { monthlyLimit: amount });
     }
 };

@@ -13,6 +13,7 @@ export interface UserData extends BaseType {
     fullName: string | null;
     dateOfBirth: string | null; // ISO Date String
     gender: Gender | null;
+    monthlyLimit?: number;
 }
 
 // Update Profile Payload

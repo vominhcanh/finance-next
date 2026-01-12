@@ -5,6 +5,18 @@ export interface SpendingWarningResponse {
     monthlyLimit: number;
     percentUsed: number;
     alertLevel: AlertLevel;
+
+    // Advanced Metrics
+    projectedSpending: number;
+    spendingTrend: number;
+    dailyAverage: number;
+    safeDailySpend: number;
+    topCategory?: {
+        name: string;
+        amount: number;
+        percent: number;
+    };
+    adviceMessage?: string;
 }
 
 export interface UpcomingPaymentItem {
@@ -13,7 +25,10 @@ export interface UpcomingPaymentItem {
     amount: number;
     dueDate: string;
     daysRemaining: number;
-    alertLevel: AlertLevel;
+    alertLevel: 'RED' | 'ORANGE' | 'YELLOW';
+    walletId?: string; // For CREDIT_CARD
+    debtId?: string;   // For LOAN
+    installmentId?: string; // For LOAN
     installment?: {
         current: number;
         total: number;

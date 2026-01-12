@@ -11,49 +11,38 @@
     }
 
     .user-info-card {
-        background: #f6f6f6;
-        border-radius: 20px;
-        padding: 24px;
+        background: #fcfcfc;
+        border-radius: 24px;
+        padding: 40px 24px 32px;
         position: relative;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
         margin-bottom: 24px;
-        overflow: hidden;
+        border: 1px solid #f0f0f0;
 
         .avatar-section {
             position: relative;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
 
             .ant-avatar {
                 border: 4px solid #fff;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
             }
 
             .edit-badge {
-                position: absolute;
-                bottom: 0;
-                right: 0;
-                background: #eeebec;
-                width: 28px;
-                height: 28px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border: 2px solid #fff;
-                cursor: pointer;
-                color: $primary-color;
+                // Keep edit badge styles if needed, but the button is top right
+                display: none;
             }
         }
 
         .user-name {
-            font-size: 20px;
-            font-weight: 700;
-            color: $text-primary;
-            margin-bottom: 4px;
+            font-size: 22px;
+            font-weight: 800;
+            color: #1f1f1f;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
         }
 
         .user-role {
@@ -61,7 +50,11 @@
             color: #8c8c8c;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
+            background: #f5f5f5;
+            padding: 4px 12px;
+            border-radius: 20px;
 
             &::before {
                 content: '';
@@ -69,8 +62,7 @@
                 width: 6px;
                 height: 6px;
                 border-radius: 50%;
-                background-color: $success-color;
-                /* Online status */
+                background-color: #52c41a;
             }
         }
 
@@ -78,15 +70,23 @@
             position: absolute;
             top: 24px;
             right: 24px;
-            border-radius: 6px;
-            font-size: 12px;
+            height: 32px;
+            border-radius: 8px;
+            font-size: 13px;
             font-weight: 600;
-            border-color: #f0f0f0;
-            color: $text-primary;
+            border: 1px solid #e0e0e0;
+            background: #fff;
+            color: #262626;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 12px;
 
             &:hover {
                 border-color: $primary-color;
                 color: $primary-color;
+                background: #fff;
             }
         }
     }
@@ -97,52 +97,61 @@
         gap: 16px;
 
         .menu-item {
-            background: #f8f8f8;
-            padding: 16px;
-            border-radius: 16px;
+            background: #fff;
+            padding: 20px 24px;
+            border-radius: 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            border: 1px solid #f0f0f0;
+            // box-shadow: 0 4px 20px rgba(0,0,0,0.015);
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
             &:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+                box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+                border-color: rgba(0, 0, 0, 0.05);
             }
 
             .item-left {
                 display: flex;
                 align-items: center;
-                gap: 16px;
+                gap: 20px;
 
                 .icon-box {
-                    width: 44px;
-                    height: 44px;
-                    border-radius: 12px;
-                    background: #f5f5f5;
+                    width: 48px;
+                    height: 48px;
+                    border-radius: 50%;
+                    background: #f9f9f9;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     font-size: 20px;
-                    color: $text-primary;
+                    color: #1f1f1f;
+                    flex-shrink: 0;
+                    border: 1px solid #f5f5f5;
 
                     &.is-logout {
                         background: #fff1f0;
                         color: #ff4d4f;
+                        border-color: #ffe5e5;
                     }
                 }
 
                 .item-text {
-                    font-size: 15px;
-                    font-weight: 600;
-                    color: $text-primary;
+                    font-size: 16px;
+                    font-weight: 700;
+                    color: #1f1f1f;
+                    letter-spacing: -0.3px;
                 }
             }
 
             .item-right {
-                color: #bfbfbf;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                color: #d9d9d9;
                 font-size: 14px;
             }
         }

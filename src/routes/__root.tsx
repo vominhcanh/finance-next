@@ -14,19 +14,10 @@ const RootComponent = () => {
                         token: {
                             colorPrimary: '#1890ff',
                             colorLink: '#1890ff',
-                            fontSize: 16,
+                            fontSize: 14,
                             fontFamily: `'SVN-Gilroy', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`,
                             borderRadius: 6,
                             controlHeight: 38,
-                        },
-                        components: {
-                            Button: {
-                                borderRadius: 6,
-                            },
-                            Select: {
-                                borderRadius: 12,
-                                controlHeight: 38,
-                            },
                         },
                     }}
                     form={{

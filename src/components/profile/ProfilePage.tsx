@@ -1,6 +1,8 @@
 import { userApi } from '@/api/user.api';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { formatCurrency } from '@/utils/format.utils';
 import {
+    DollarOutlined,
     EditOutlined,
     LockOutlined,
     LogoutOutlined,
@@ -14,6 +16,7 @@ import { toast } from 'sonner';
 import { ChangePasswordDrawer } from './ChangePasswordDrawer';
 import { EditProfileDrawer } from './EditProfileDrawer';
 import './ProfilePage.scss';
+import { SetLimitModal } from './SetLimitModal';
 
 // Icon helpers can be imported or used directly.
 // Using basic Antd icons but wrapped in style to look like the reference.
@@ -22,6 +25,7 @@ export const ProfilePage = () => {
     const { logout } = useAuthContext();
     const [editOpen, setEditOpen] = useState(false);
     const [passwordOpen, setPasswordOpen] = useState(false);
+    const [limitOpen, setLimitOpen] = useState(false);
 
     // Fetch user profile
     const { data: user, isLoading, isError } = useQuery({
@@ -38,7 +42,7 @@ export const ProfilePage = () => {
     if (isLoading) {
         return (
             <div className="dashboard-loading-container">
-                <Spin size="small" />
+                <Spin />
                 <div className="loading-text">Đang tải thông tin...</div>
             </div>
         );
@@ -89,6 +93,22 @@ export const ProfilePage = () => {
                     </div>
                 </div>
 
+                {/* Monthly Limit */}
+                <div className="menu-item" onClick={() => setLimitOpen(true)}>
+                    <div className="item-left">
+                        <div className="icon-box">
+                            <DollarOutlined />
+                        </div>
+                        <span className="item-text">Hạn mức chi tiêu</span>
+                    </div>
+                    <div className="item-right">
+                        <div style={{ marginRight: 8, fontSize: 13, color: '#8c8c8c' }}>
+                            {user.monthlyLimit ? formatCurrency(user.monthlyLimit) : 'Chưa thiết lập'}
+                        </div>
+                        <RightOutlined />
+                    </div>
+                </div>
+
                 {/* Account Settings / Change Password */}
                 <div className="menu-item" onClick={() => setPasswordOpen(true)}>
                     <div className="item-left">
@@ -129,6 +149,12 @@ export const ProfilePage = () => {
             <ChangePasswordDrawer
                 open={passwordOpen}
                 onClose={() => setPasswordOpen(false)}
+            />
+
+            <SetLimitModal
+                open={limitOpen}
+                onClose={() => setLimitOpen(false)}
+                currentLimit={user.monthlyLimit}
             />
         </div>
     );

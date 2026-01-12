@@ -14,6 +14,7 @@ export const API_AUTH = {
 export const API_USER = {
     profile: `${V1}/users/me`,
     changePassword: `${V1}/users/change-password`,
+    monthlyLimit: `${V1}/users/monthly-limit`,
 };
 
 // Category API Paths

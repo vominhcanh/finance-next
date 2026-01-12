@@ -78,7 +78,7 @@ export const DebtList = () => {
                             <div className="progress-wrapper">
                                 <Progress
                                     percent={percentage}
-                                    size="small"
+
                                     showInfo={false}
                                     strokeColor="#52c41a"
                                     railColor="#f0f0f0"
@@ -159,7 +159,7 @@ export const DebtList = () => {
                             onClick: () => handleDebtClick(record._id!),
                             style: { cursor: 'pointer' }
                         })}
-                        size="small"
+
                         className="modern-table"
                         showHeader={true}
                     />
