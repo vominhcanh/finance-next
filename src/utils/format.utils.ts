@@ -24,3 +24,19 @@ export const formatDate = (date: string | Date, format: string = 'DD/MM/YYYY'): 
     }
     return d.toLocaleDateString('vi-VN');
 };
+// Check if color is light
+export const isLightColor = (color: string): boolean => {
+    if (!color) return true; // Default to light if no color
+    const hex = color.replace('#', '');
+    // Handle short hex (e.g., FFF)
+    const fullHex = hex.length === 3 ? hex.split('').map(x => x + x).join('') : hex;
+
+    const c_r = parseInt(fullHex.substr(0, 2), 16);
+    const c_g = parseInt(fullHex.substr(2, 2), 16);
+    const c_b = parseInt(fullHex.substr(4, 2), 16);
+
+    if (isNaN(c_r) || isNaN(c_g) || isNaN(c_b)) return true;
+
+    const brightness = ((c_r * 299) + (c_g * 587) + (c_b * 114)) / 1000;
+    return brightness > 128;
+};

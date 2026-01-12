@@ -32,6 +32,7 @@ export const API_WALLET = {
     getOne: (id: string) => `${V1}/wallets/${id}`,
     update: (id: string) => `${V1}/wallets/${id}`,
     delete: (id: string) => `${V1}/wallets/${id}`,
+    payStatement: (id: string) => `${V1}/wallets/${id}/pay-statement`,
 };
 
 // Transaction API Paths
@@ -61,6 +62,11 @@ export const API_ANALYTICS = {
     cardsSummary: `${V1}/transactions/stats/cards/summary`,
     categorySpending: (id: string) => `${V1}/transactions/stats/wallet/${id}/overview`,
     transactionsMonthly: `${V1}/analytics/transactions-monthly`,
+    spendingWarning: `${V1}/analytics/spending-warning`,
+    upcomingPayments: `${V1}/analytics/upcoming-payments`,
+    // New Chart APIs
+    trendAnalysis: `${V1}/analytics/trend`,
+    categoryBreakdown: `${V1}/analytics/category-breakdown`,
 };
 
 // Bank API Paths

@@ -1,6 +1,7 @@
+import { SpendingWarningResponse, UpcomingPaymentItem } from '@/types/analytics.type';
 import apiClient from './config/apiClient';
-import { API_ANALYTICS } from './config/apiPath';
 import { ApiResponse } from './config/apiConfig.type';
+import { API_ANALYTICS } from './config/apiPath';
 
 // Types for responses from API
 export interface MonthlyOverviewItem {
@@ -49,6 +50,18 @@ export interface CategorySpendingItem {
     totalAmount: number;
 }
 
+// Chart Response Types
+export interface TrendAnalysisItem {
+    month: string;
+    income: number;
+    expense: number;
+}
+
+export interface CategoryBreakdownItem {
+    categoryName: string;
+    totalAmount: number;
+}
+
 export const analyticsApi = {
     async getMonthlyOverview(): Promise<MonthlyOverview> {
         const response = await apiClient.get<ApiResponse<MonthlyOverviewItem[]>>(API_ANALYTICS.monthlyOverview);
@@ -88,9 +101,38 @@ export const analyticsApi = {
         return response.data?.data || { _id: null, totalTransactions: 0, totalIncome: 0, totalExpense: 0 };
     },
 
-    async getMonthlyTransactions(month?: string): Promise<MonthlyTransactionItem[]> {
-        const params = month ? { month } : {};
+    async getMonthlyTransactions(month?: string, walletId?: string): Promise<MonthlyTransactionItem[]> {
+        const params: any = {};
+        if (month) params.month = month;
+        if (walletId) params.walletId = walletId;
+
         const response = await apiClient.get<ApiResponse<MonthlyTransactionItem[]>>(API_ANALYTICS.transactionsMonthly, { params });
+        return response.data?.data || [];
+    },
+
+    async getSpendingWarning(): Promise<SpendingWarningResponse> {
+        const response = await apiClient.get<ApiResponse<SpendingWarningResponse>>(API_ANALYTICS.spendingWarning);
+        return response.data?.data;
+    },
+
+    async getUpcomingPayments(): Promise<UpcomingPaymentItem[]> {
+        const response = await apiClient.get<ApiResponse<UpcomingPaymentItem[]>>(API_ANALYTICS.upcomingPayments);
+        return response.data?.data || [];
+    },
+
+    // Chart APIs
+    async getTrendAnalysis(period: '6m' | '12m' = '6m'): Promise<TrendAnalysisItem[]> {
+        const response = await apiClient.get<ApiResponse<TrendAnalysisItem[]>>(API_ANALYTICS.trendAnalysis, {
+            params: { period }
+        });
+        return response.data?.data || [];
+    },
+
+    async getCategoryBreakdown(month?: string): Promise<CategoryBreakdownItem[]> {
+        const params: any = {};
+        if (month) params.month = month;
+
+        const response = await apiClient.get<ApiResponse<CategoryBreakdownItem[]>>(API_ANALYTICS.categoryBreakdown, { params });
         return response.data?.data || [];
     }
 };

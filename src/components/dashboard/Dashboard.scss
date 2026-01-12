@@ -33,6 +33,11 @@
         }
     }
 
+    // Warning Section
+    .warning-section {
+        margin-bottom: 32px;
+    }
+
     // 2x2 Stats Grid
     .stats-grid {
         display: grid;
@@ -90,7 +95,7 @@
 
                     // Green
                     &.negative {
-                        color: #ff3d00;
+                        color: #f51b1f;
                     }
 
                     // Red
@@ -117,10 +122,40 @@
                 }
 
                 .highlight-red {
-                    color: #ff3d00;
-                    font-weight: 600;
+                    color: #f51b1f;
+                    font-weight: 00;
                     margin-left: 4px;
                 }
+            }
+        }
+    }
+
+    .charts-grid {
+        @media (min-width: 992px) {
+            .trend-chart-col {
+                grid-column: span 8 !important;
+            }
+
+            .flow-chart-col {
+                grid-column: span 4 !important;
+            }
+
+            .structure-chart-col {
+                grid-column: span 12 !important;
+            }
+        }
+
+        @media (min-width: 1400px) {
+            .trend-chart-col {
+                grid-column: span 6 !important;
+            }
+
+            .flow-chart-col {
+                grid-column: span 3 !important;
+            }
+
+            .structure-chart-col {
+                grid-column: span 3 !important;
             }
         }
     }
@@ -316,7 +351,7 @@
 
                     &.expense {
                         background: #fff1f0;
-                        color: #ff4d4f;
+                        color: #f51b1f;
                     }
 
                     // Or neutral for generic

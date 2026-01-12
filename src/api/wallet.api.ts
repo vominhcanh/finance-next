@@ -1,7 +1,7 @@
+import { PayStatementPayload, WalletData, WalletForm } from '@/types/wallet.type';
 import apiClient from './config/apiClient';
+import { ApiListResponse, ApiResponse } from './config/apiConfig.type';
 import { API_WALLET } from './config/apiPath';
-import { ApiResponse, ApiListResponse } from './config/apiConfig.type';
-import { WalletData, WalletForm } from '@/types/wallet.type';
 
 export const walletApi = {
     async getAll(): Promise<WalletData[]> {
@@ -21,5 +21,9 @@ export const walletApi = {
 
     async delete(id: string): Promise<void> {
         await apiClient.delete(API_WALLET.delete(id));
+    },
+
+    async payStatement(id: string, payload: PayStatementPayload): Promise<void> {
+        await apiClient.post(API_WALLET.payStatement(id), payload);
     },
 };

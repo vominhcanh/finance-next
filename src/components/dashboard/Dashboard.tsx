@@ -1,22 +1,24 @@
-import { useState, useEffect } from 'react';
-import { Spin } from 'antd';
 import {
-    UserOutlined,
-    ShoppingOutlined,
+    ArrowDownOutlined,
+    ArrowUpOutlined,
     EyeOutlined,
     PieChartOutlined,
-    ArrowUpOutlined,
-    ArrowDownOutlined
+    ShoppingOutlined,
+    UserOutlined
 } from '@ant-design/icons';
+import { Col, Row, Spin } from 'antd';
+import { useEffect, useState } from 'react';
 
-import { formatCurrency, formatDate } from '@utils/format.utils';
-import { analyticsApi, DebtStatusItem } from '@api/analytics.api';
-import { transactionApi } from '@api/transaction.api';
-import { walletApi } from '@api/wallet.api';
 import { WalletData } from '@/types/wallet.type';
-import { TransactionData } from '@/types/transaction.type';
-import { DashboardAnalytics } from './DashboardAnalytics';
+import { analyticsApi } from '@api/analytics.api';
+import { walletApi } from '@api/wallet.api';
+import { formatCurrency } from '@utils/format.utils';
+import { DailyFlowChart } from './charts/DailyFlowChart';
+import { ExpenseStructureChart } from './charts/ExpenseStructureChart';
+import { FinancialTrendChart } from './charts/FinancialTrendChart';
 import './Dashboard.scss';
+import { SpendingWarningWidget } from './widgets/SpendingWarningWidget';
+import { UpcomingPaymentsWidget } from './widgets/UpcomingPaymentsWidget';
 
 export const Dashboard = () => {
     const [loading, setLoading] = useState(true);
@@ -27,10 +29,6 @@ export const Dashboard = () => {
         balance: 0,
     });
     const [wallets, setWallets] = useState<WalletData[]>([]);
-    const [recentTransactions, setRecentTransactions] = useState<TransactionData[]>([]);
-    const [activeTab, setActiveTab] = useState<'ALL' | 'INCOME' | 'EXPENSE'>('ALL');
-    const [debtStatus, setDebtStatus] = useState<DebtStatusItem[]>([]);
-    const [creditCardFees, setCreditCardFees] = useState<any>(null);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -38,19 +36,11 @@ export const Dashboard = () => {
                 setLoading(true);
                 setError(null);
 
-                const [walletsData, transactionsData] = await Promise.all([
-                    walletApi.getAll(),
-                    transactionApi.getAll()
-                ]);
-
+                const walletsData = await walletApi.getAll();
                 setWallets(Array.isArray(walletsData) ? walletsData : []);
-                setRecentTransactions(transactionsData.data);
+
                 try {
-                    const [overview, debts, fees] = await Promise.all([
-                        analyticsApi.getMonthlyOverview(),
-                        analyticsApi.getDebtStatus(),
-                        analyticsApi.getCreditCardFees()
-                    ]);
+                    const overview = await analyticsApi.getMonthlyOverview();
 
                     if (overview && typeof overview === 'object') {
                         setMonthlyData({
@@ -59,8 +49,6 @@ export const Dashboard = () => {
                             balance: overview.balance || 0,
                         });
                     }
-                    setDebtStatus(debts || []);
-                    setCreditCardFees(fees);
 
                 } catch (analyticsError) {
                     console.warn('Analytics API not available:', analyticsError);
@@ -153,7 +141,34 @@ export const Dashboard = () => {
                     </div>
                 </div>
             </div>
-            <DashboardAnalytics />
+            {/* Warning Section - Priority 1 */}
+            <div className="warning-section">
+                <Row gutter={[16, 16]}>
+                    <Col span={24} md={12}>
+                        <SpendingWarningWidget />
+                    </Col>
+                    <Col span={24} md={12}>
+                        <UpcomingPaymentsWidget />
+                    </Col>
+                </Row>
+            </div>
+            {/* Financial Charts Section */}
+            <div className="charts-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 16, marginBottom: 16 }}>
+                {/* Main Trend Chart */}
+                <div style={{ gridColumn: 'span 12' }} className="trend-chart-col">
+                    <FinancialTrendChart />
+                </div>
+
+                {/* Daily Flow */}
+                <div style={{ gridColumn: 'span 12' }} className="flow-chart-col">
+                    <DailyFlowChart />
+                </div>
+
+                {/* Structure */}
+                <div style={{ gridColumn: 'span 12' }} className="structure-chart-col">
+                    <ExpenseStructureChart />
+                </div>
+            </div>
 
             <div style={{ height: '100px' }}></div>
         </div>

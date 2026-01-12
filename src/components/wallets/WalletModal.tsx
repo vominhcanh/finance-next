@@ -1,9 +1,9 @@
-import { Drawer, Form, Input, Select, InputNumber, DatePicker, Row, Col, Button, ColorPicker, Avatar } from 'antd';
-import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { WalletData, WalletForm, WalletType, WalletStatus } from '@/types/wallet.type';
 import { bankApi } from '@/api/bank.api';
+import { WalletData, WalletForm, WalletStatus, WalletType } from '@/types/wallet.type';
+import { useQuery } from '@tanstack/react-query';
+import { Button, Col, ColorPicker, DatePicker, Drawer, Form, Input, InputNumber, Row, Select } from 'antd';
 import dayjs from 'dayjs';
+import { useEffect } from 'react';
 import './WalletModal.scss';
 
 interface WalletModalProps {
@@ -156,7 +156,7 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
                                         {(Array.isArray(banks) ? banks : []).map(bank => (
                                             <Option key={bank._id} value={bank._id} label={bank.shortName}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
-                                                    <span style={{ fontWeight: 500 }}>{bank.name}</span>
+                                                    <span style={{ fontWeight: 400 }}>{bank.shortName}</span>
                                                     <span style={{ color: '#000000', fontSize: 13 }}>({bank.code})</span>
                                                 </div>
                                             </Option>

@@ -77,3 +77,10 @@ export interface WalletForm {
     color?: string;
     logo?: string;
 }
+
+export interface PayStatementPayload {
+    action: 'PAY_FULL' | 'REFINANCE';
+    sourceWalletId: string;
+    amount: number;
+    refinanceFeeRate?: number;
+}
