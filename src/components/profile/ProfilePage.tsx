@@ -1,18 +1,18 @@
-import { useState } from 'react';
-import { Button, Avatar, Spin, message } from 'antd';
+import { userApi } from '@/api/user.api';
+import { useAuthContext } from '@/contexts/AuthContext';
 import {
-    UserOutlined,
-    RightOutlined,
     EditOutlined,
     LockOutlined,
-    LogoutOutlined
+    LogoutOutlined,
+    RightOutlined,
+    UserOutlined
 } from '@ant-design/icons';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { UserData, Gender } from '@/types/user.type';
 import { useQuery } from '@tanstack/react-query';
-import { userApi } from '@/api/user.api';
-import { EditProfileDrawer } from './EditProfileDrawer';
+import { Avatar, Button, Spin } from 'antd';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { ChangePasswordDrawer } from './ChangePasswordDrawer';
+import { EditProfileDrawer } from './EditProfileDrawer';
 import './ProfilePage.scss';
 
 // Icon helpers can be imported or used directly.
@@ -32,7 +32,7 @@ export const ProfilePage = () => {
 
     const handleLogout = () => {
         logout();
-        message.success('Đã đăng xuất thành công');
+        toast.success('Đã đăng xuất thành công');
     };
 
     if (isLoading) {

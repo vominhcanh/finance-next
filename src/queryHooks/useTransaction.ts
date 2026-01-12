@@ -1,8 +1,7 @@
-
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { transactionApi } from '@api/transaction.api';
 import { TransactionForm, TransactionQueryParams } from '@/types/transaction.type';
-import { message } from 'antd';
+import { transactionApi } from '@api/transaction.api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 export const QUERY_KEY_TRANSACTION = 'TRANSACTIONS';
 
@@ -20,13 +19,13 @@ export const useMutateTransaction = () => {
     const create = useMutation({
         mutationFn: (data: TransactionForm) => transactionApi.create(data),
         onSuccess: () => {
-            message.success('Tạo giao dịch thành công');
+            toast.success('Tạo giao dịch thành công');
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY_TRANSACTION] });
             // Invalidate wallets to update balance
             queryClient.invalidateQueries({ queryKey: ['WALLETS'] });
         },
         onError: (error: any) => {
-            message.error(error?.response?.data?.message || 'Có lỗi xảy ra');
+            toast.error(error?.response?.data?.message || 'Có lỗi xảy ra');
         }
     });
 
@@ -34,24 +33,24 @@ export const useMutateTransaction = () => {
         mutationFn: ({ id, data }: { id: string; data: Partial<TransactionForm> }) =>
             transactionApi.update(id, data),
         onSuccess: () => {
-            message.success('Cập nhật thành công');
+            toast.success('Cập nhật thành công');
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY_TRANSACTION] });
             queryClient.invalidateQueries({ queryKey: ['WALLETS'] });
         },
         onError: (error: any) => {
-            message.error(error?.response?.data?.message || 'Có lỗi xảy ra');
+            toast.error(error?.response?.data?.message || 'Có lỗi xảy ra');
         }
     });
 
     const remove = useMutation({
         mutationFn: (id: string) => transactionApi.delete(id),
         onSuccess: () => {
-            message.success('Xóa thành công');
+            toast.success('Xóa thành công');
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY_TRANSACTION] });
             queryClient.invalidateQueries({ queryKey: ['WALLETS'] });
         },
         onError: (error: any) => {
-            message.error(error?.response?.data?.message || 'Có lỗi xảy ra');
+            toast.error(error?.response?.data?.message || 'Có lỗi xảy ra');
         }
     });
 

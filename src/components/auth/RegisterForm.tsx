@@ -1,8 +1,9 @@
-import { Form, Input, Button, Space, message } from 'antd';
-import { MailOutlined, LockOutlined, UserOutlined, GoogleOutlined } from '@ant-design/icons';
+import { GoogleOutlined, LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 import { useAuth } from '@hooks/useAuth';
-import { RegisterForm as RegisterFormType } from '../../types/auth.type';
 import { useNavigate } from '@tanstack/react-router';
+import { Button, Form, Input, Space } from 'antd';
+import { toast } from 'sonner';
+import { RegisterForm as RegisterFormType } from '../../types/auth.type';
 import './AuthForm.scss';
 
 export const RegisterForm = () => {
@@ -14,15 +15,15 @@ export const RegisterForm = () => {
         const { email, password, fullName } = values;
         const success = await register({ email, password, fullName });
         if (success) {
-            message.success('Đăng ký thành công!');
+            toast.success('Đăng ký thành công!');
             navigate({ to: '/' });
         } else {
-            message.error('Đăng ký thất bại. Vui lòng thử lại!');
+            toast.error('Đăng ký thất bại. Vui lòng thử lại!');
         }
     };
 
     const handleGoogleSignIn = () => {
-        message.info('Chức năng đăng ký Google đang được phát triển');
+        toast.info('Chức năng đăng ký Google đang được phát triển');
     };
 
     return (

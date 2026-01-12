@@ -1,8 +1,9 @@
-import { Form, Input, Button, Checkbox, Space, message } from 'antd';
-import { MailOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons';
+import { GoogleOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import { useAuth } from '@hooks/useAuth';
-import { LoginForm as LoginFormType } from '../../types/auth.type';
 import { useNavigate } from '@tanstack/react-router';
+import { Button, Checkbox, Form, Input, Space } from 'antd';
+import { toast } from 'sonner';
+import { LoginForm as LoginFormType } from '../../types/auth.type';
 import './AuthForm.scss';
 
 export const LoginForm = () => {
@@ -14,20 +15,20 @@ export const LoginForm = () => {
         try {
             const success = await login(values);
             if (success) {
-                message.success('Đăng nhập thành công!');
+                toast.success('Đăng nhập thành công!');
                 setTimeout(() => {
                     navigate({ to: '/' });
                 }, 100);
             } else {
-                message.error('Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!');
+                toast.error('Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!');
             }
         } catch (err: any) {
-            message.error(err.message || 'Có lỗi xảy ra khi đăng nhập!');
+            toast.error(err.message || 'Có lỗi xảy ra khi đăng nhập!');
         }
     };
 
     const handleGoogleSignIn = () => {
-        message.info('Chức năng đăng nhập Google đang được phát triển');
+        toast.info('Chức năng đăng nhập Google đang được phát triển');
     };
 
     return (
@@ -59,6 +60,7 @@ export const LoginForm = () => {
                             prefix={<MailOutlined />}
                             placeholder="tim.jennings@example.com"
                             autoComplete="email"
+
                         />
                     </Form.Item>
 

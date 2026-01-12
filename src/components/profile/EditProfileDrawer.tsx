@@ -1,9 +1,10 @@
-import { Drawer, Form, Input, Select, DatePicker, Button, message } from 'antd';
-import { useEffect } from 'react';
-import dayjs from 'dayjs';
-import { UserData, UpdateProfileForm, Gender } from '@/types/user.type';
 import { userApi } from '@/api/user.api';
+import { Gender, UpdateProfileForm, UserData } from '@/types/user.type';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button, DatePicker, Drawer, Form, Input, Select } from 'antd';
+import dayjs from 'dayjs';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 interface EditProfileDrawerProps {
     open: boolean;
@@ -18,12 +19,12 @@ export const EditProfileDrawer = ({ open, onClose, user }: EditProfileDrawerProp
     const updateMutation = useMutation({
         mutationFn: (data: UpdateProfileForm) => userApi.updateProfile(data),
         onSuccess: () => {
-            message.success('Cập nhật thông tin thành công');
+            toast.success('Cập nhật thông tin thành công');
             queryClient.invalidateQueries({ queryKey: ['profile'] });
             onClose();
         },
         onError: () => {
-            message.error('Cập nhật thất bại. Vui lòng thử lại.');
+            toast.error('Cập nhật thất bại. Vui lòng thử lại.');
         }
     });
 

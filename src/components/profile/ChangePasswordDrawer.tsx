@@ -1,7 +1,8 @@
-import { Drawer, Form, Input, Button, message } from 'antd';
 import { userApi } from '@/api/user.api';
-import { useMutation } from '@tanstack/react-query';
 import { ChangePasswordForm } from '@/types/user.type';
+import { useMutation } from '@tanstack/react-query';
+import { Button, Drawer, Form, Input } from 'antd';
+import { toast } from 'sonner';
 
 interface ChangePasswordDrawerProps {
     open: boolean;
@@ -14,12 +15,12 @@ export const ChangePasswordDrawer = ({ open, onClose }: ChangePasswordDrawerProp
     const changePasswordMutation = useMutation({
         mutationFn: (data: ChangePasswordForm) => userApi.changePassword(data),
         onSuccess: () => {
-            message.success('Đổi mật khẩu thành công');
+            toast.success('Đổi mật khẩu thành công');
             form.resetFields();
             onClose();
         },
         onError: () => {
-            message.error('Đổi mật khẩu thất bại. Mật khẩu cũ không đúng?');
+            toast.error('Đổi mật khẩu thất bại. Mật khẩu cũ không đúng?');
         }
     });
 

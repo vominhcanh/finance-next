@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
-import { Form, Input, Select, DatePicker, Button, InputNumber, Row, Col, Typography, Table, Tag, Tabs, Modal, message, Spin } from 'antd';
-import { useNavigate } from '@tanstack/react-router';
 import { useMutateDebt, useQueryDebt } from '@/queryHooks/debt';
 import { useQueryWallets } from '@/queryHooks/wallet';
 import { DebtType, InstallmentStatus } from '@/types/debt.type';
+import { ArrowRightOutlined, FileAddOutlined, SaveOutlined } from '@ant-design/icons';
+import { useNavigate } from '@tanstack/react-router';
 import { formatCurrency } from '@utils/format.utils';
-import { SaveOutlined, LeftOutlined, ArrowRightOutlined, PlusOutlined, FileAddOutlined } from '@ant-design/icons';
+import { Button, Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select, Spin, Table, Tabs, Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import './DebtForm.scss';
 
 const { Title, Text } = Typography;
@@ -58,7 +59,7 @@ export const DebtFormParam = ({ id }: DebtFormProps) => {
             });
         } else if (id) {
             update.mutate({ id, data: payload }, {
-                onSuccess: () => message.success('Cập nhật thành công'),
+                onSuccess: () => toast.success('Cập nhật thành công'),
             });
         }
     };
@@ -76,7 +77,7 @@ export const DebtFormParam = ({ id }: DebtFormProps) => {
             { installmentId: selectedInstallment._id, walletId: selectedWalletId },
             {
                 onSuccess: () => {
-                    message.success('Thanh toán thành công');
+                    toast.success('Thanh toán thành công');
                     setPaymentModalOpen(false);
                     refetch(); // Reload data
                     setActiveTab('2'); // Ensure we stay on Installment tab or switch to it? User said "reload detail and go to tab installment"

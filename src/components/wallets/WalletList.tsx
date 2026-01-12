@@ -1,22 +1,22 @@
-import { useState, useEffect } from 'react';
-import { Spin, Button, message, Avatar } from 'antd';
-import {
-    EyeOutlined,
-    EyeInvisibleOutlined,
-    WifiOutlined,
-    MoreOutlined,
-    PlusOutlined,
-    ArrowRightOutlined
-} from '@ant-design/icons';
-import { walletApi } from '@api/wallet.api';
-import { transactionApi } from '@api/transaction.api';
-import { analyticsApi, MonthlyOverview } from '@api/analytics.api';
-import { WalletData, WalletType, WalletForm } from '@/types/wallet.type';
 import { TransactionData } from '@/types/transaction.type';
+import { WalletData, WalletForm, WalletType } from '@/types/wallet.type';
+import {
+    ArrowRightOutlined,
+    EyeInvisibleOutlined,
+    EyeOutlined,
+    PlusOutlined,
+    WifiOutlined
+} from '@ant-design/icons';
+import { analyticsApi, MonthlyOverview } from '@api/analytics.api';
+import { transactionApi } from '@api/transaction.api';
+import { walletApi } from '@api/wallet.api';
 import { formatCurrency, formatDate } from '@utils/format.utils';
+import { Button, Spin } from 'antd';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { WalletAnalytics } from './WalletAnalytics';
-import { WalletModal } from './WalletModal';
 import './WalletList.scss';
+import { WalletModal } from './WalletModal';
 
 const MOCK_CARD_EXPIRY = '12/2035';
 const MOCK_INCOME_TARGET = 15000000; // Mock target for now
@@ -78,16 +78,16 @@ export const WalletList = () => {
             setModalLoading(true);
             if (editingWallet) {
                 await walletApi.update(editingWallet._id, values);
-                message.success('Cập nhật ví thành công');
+                toast.success('Cập nhật ví thành công');
             } else {
                 await walletApi.create(values);
-                message.success('Thêm ví mới thành công');
+                toast.success('Thêm ví mới thành công');
             }
             setIsModalOpen(false);
             fetchData(); // Refresh list
         } catch (error) {
             console.error('Submit wallet error:', error);
-            message.error('Có lỗi xảy ra, vui lòng thử lại');
+            toast.error('Có lỗi xảy ra, vui lòng thử lại');
         } finally {
             setModalLoading(false);
         }

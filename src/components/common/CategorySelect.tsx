@@ -1,8 +1,9 @@
-import React, { useState, useRef } from 'react';
-import { Select, Divider, Input, Button, Space, message } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
-import { useQueryCategories, useMutationCreateCategory } from '@/queryHooks/useCategory';
+import { useMutationCreateCategory, useQueryCategories } from '@/queryHooks/useCategory';
 import { CategoryType } from '@/types/category.type';
+import { PlusOutlined } from '@ant-design/icons';
+import { Button, Divider, Input, Select } from 'antd';
+import React, { useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 interface CategorySelectProps {
     value?: string;
@@ -34,7 +35,7 @@ export const CategorySelect: React.FC<CategorySelectProps> = ({ value, onChange,
             color: '#1890ff' // Default color
         }, {
             onSuccess: (newCategory) => {
-                message.success('Category added successfully');
+                toast.success('Category added successfully');
                 setName('');
                 setTimeout(() => {
                     inputRef.current?.focus();
@@ -45,7 +46,7 @@ export const CategorySelect: React.FC<CategorySelectProps> = ({ value, onChange,
                 }
             },
             onError: () => {
-                message.error('Failed to add category');
+                toast.error('Failed to add category');
             }
         });
     };
