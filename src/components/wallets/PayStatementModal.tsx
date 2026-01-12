@@ -21,8 +21,6 @@ export const PayStatementModal = ({ open, onClose, wallet, wallets, onSuccess }:
     const amount = Form.useWatch('amount', form);
     const refinanceFeeRate = Form.useWatch('refinanceFeeRate', form);
 
-    const calculatedFee = (amount || 0) * (refinanceFeeRate || 0) / 100;
-
     useEffect(() => {
         if (open && wallet) {
             // Calculate outstanding debt for Credit Card: Limit - Available Balance
