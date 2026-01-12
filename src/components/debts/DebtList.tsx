@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
-import { Button, Segmented, Table, Tag, Progress } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import { PlusOutlined, LeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
-import { formatCurrency } from '@utils/format.utils';
 import { useQueryDebts } from '@/queryHooks/debt';
 import { DebtData, DebtType } from '@/types/debt.type';
+import { ArrowRightOutlined, PlusOutlined } from '@ant-design/icons';
+import { useNavigate } from '@tanstack/react-router';
+import { formatCurrency } from '@utils/format.utils';
+import { Progress, Segmented, Table, Tag } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
+import { useState } from 'react';
 import './DebtList.scss';
 
 export const DebtList = () => {

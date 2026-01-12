@@ -30,7 +30,7 @@ export interface Debt extends BaseType {
     totalAmount: number;
     remainingAmount: number;
     status: DebtStatus;
-    isInstallment: boolean;
+    isInstallment: number;
     startDate?: string;
     paymentDate?: number; // Day of month (e.g., 10)
     totalMonths?: number;
@@ -48,7 +48,7 @@ export interface DebtForm {
     partnerName: string;
     type: DebtType;
     totalAmount: number;
-    isInstallment: boolean;
+    isInstallment: number;
     startDate?: string;
     paymentDate?: number;
     totalMonths?: number;

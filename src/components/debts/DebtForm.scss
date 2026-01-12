@@ -1,303 +1,498 @@
+// DebtForm.scss
 @use '../../styles/variables.scss' as *;
 
 .debt-form-container {
     padding: $spacing-md;
-    max-width: 900px;
-    margin-bottom: 150px;
+    max-width: 600px;
+    margin: 0 auto;
+    margin-bottom: 120px;
+    min-height: 100vh;
+    background-color: $background-color;
 
+    // 1. Header Navigation
     .custom-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0 4px;
+        padding: 12px 0;
 
         .icon-btn {
             width: 40px;
             height: 40px;
-            border-radius: 12px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 18px;
+            justify-content: flex-start;
+            font-size: 20px;
             color: $text-primary;
             cursor: pointer;
+            transition: opacity 0.2s;
 
             &:hover {
-                background: rgba(0, 0, 0, 0.04);
+                opacity: 0.7;
+            }
+
+            &.action-btn {
+                justify-content: flex-end; // Right align for last item
+                color: $primary-color; // Make action blue
+                font-size: 22px;
             }
         }
 
         .page-title {
-            font-size: 18px;
+            flex: 1;
+            text-align: center;
+            font-size: 16px;
             font-weight: 700;
-            color: $primary-color;
+            color: $text-primary;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
     }
 
+    // 2. Detail Header Stats (Progress Card)
+    .debt-header-card {
+        margin-bottom: 24px;
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid #f0f0f0;
+        overflow: hidden;
 
-    .form-header {
+        .ant-card-body {
+            padding: 24px;
+        }
+
+        .stat-item {
+            text-align: center;
+            margin-bottom: 24px;
+
+            .ant-typography-secondary {
+                font-size: 14px;
+                color: #8c8c8c;
+                margin-bottom: 8px;
+                display: block;
+            }
+
+            .main-amount {
+                font-size: 32px;
+                font-weight: 800;
+                color: #ff4d4f;
+                line-height: 1.2;
+                letter-spacing: -0.5px;
+            }
+        }
+
+        .progress-section {
+            .progress-info {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 10px;
+                font-size: 14px;
+                font-weight: 500;
+                color: $text-secondary;
+            }
+
+            .ant-progress-inner {
+                background-color: #f5f5f5;
+                border-radius: 100px;
+            }
+
+            .ant-progress-bg {
+                height: 10px !important;
+                border-radius: 100px;
+                background: linear-gradient(90deg, #1890ff, #69c0ff);
+            }
+        }
+    }
+
+    // 3. Tab Switcher (Segmented Control Style)
+    .detail-tabs-container {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-bottom: $spacing-sm;
-        border-bottom: 1px solid #f0f0f0;
+        flex-direction: column;
+        gap: 24px;
 
-        .page-title {
-            margin: 0;
-            font-size: 18px;
-            color: #494848;
-            font-weight: 600;
-            letter-spacing: -0.01em;
-        }
-    }
-
-    .custom-tabs {
-        width: 100%;
-        margin-top: 10px;
-
-        .ant-tabs-nav {
-            margin-bottom: 20px;
-
-            &::before {
-                border-bottom: 1px solid #f0f0f0;
-            }
-        }
-
-        .ant-tabs-tab {
-            padding: 10px 15px;
-            font-size: 14px;
-            color: $text-secondary;
-            transition: all 0.2s;
+        .tab-switcher {
+            display: flex;
+            background: #f0f2f5;
+            padding: 4px;
+            border-radius: 14px;
             width: 100%;
+            position: relative;
 
-            &:hover {
-                color: $primary-color;
-            }
+            .tab-item {
+                flex: 1;
+                text-align: center;
+                padding: 10px 0;
+                font-size: 14px;
+                font-weight: 500;
+                color: #8c8c8c;
+                border-radius: 10px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                z-index: 1;
 
-            &.ant-tabs-tab-active {
-                .ant-tabs-tab-btn {
-                    color: $primary-color;
+                &.active {
+                    background: #fff;
+                    color: $text-primary;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
                     font-weight: 600;
                 }
             }
         }
 
-        .ant-tabs-ink-bar {
-            height: 2px;
-            background: $primary-color;
+        .tab-content {
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
     }
 
+    // 4. Form Styles
     .form-section {
         .ant-form-item {
-            margin-bottom: 12px; // Much tighter
+            margin-bottom: 16px; // Tighter spacing for small inputs
+        }
+
+        .box-title {
+            margin-bottom: 12px !important;
+            font-size: 14px !important; // Smaller title
+            font-weight: 600 !important;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: $text-primary;
         }
 
         .ant-form-item-label {
-            padding-bottom: 2px; // Closer label
+            padding-bottom: 4px;
 
             label {
                 font-weight: 500;
                 color: $text-secondary;
-                font-size: 13px;
-                height: auto;
+                font-size: 13px; // Smaller label
+            }
+
+            label.ant-form-item-required:not(.ant-form-item-required-mark-optional)::before {
+                display: none; // Hide default asterisk
+            }
+
+            label.ant-form-item-required::after {
+                content: ' *';
+                color: $error-color;
+                font-family: inherit;
             }
         }
 
-        // Compact inputs
-        $input-height: 36px; // Slightly smaller than 36px
+        $input-height: 32px;
 
         .ant-input,
         .ant-input-number,
         .ant-picker,
-        .ant-select,
         .ant-select-selector {
-            border-radius: 6px;
-            font-size: 14px;
+            border-radius: $border-radius-sm;
+            font-size: 13px;
+            border: 1px solid $border-color;
+            background: $background-color;
+            transition: all 0.2s;
+            box-shadow: none; // Flatter look for small inputs
 
             &:hover,
-            &:focus {
+            &:focus,
+            &.ant-input-focused,
+            &.ant-picker-focused {
                 border-color: $primary-color;
+                box-shadow: 0 0 0 2px rgba($primary-color, 0.1);
             }
         }
 
         .ant-input,
         .ant-input-number-input,
-        .ant-select-selector,
         .ant-picker {
             height: $input-height !important;
             line-height: $input-height;
+            padding: 0 8px;
         }
 
-        // Remove padding from picker container as it has input inside,
-        // but often we need to adjust to ensure alignment.
-        .ant-picker {
-            padding: 4px 11px;
-
-            input {
-                line-height: 1.5; // Reset inner input
-            }
-        }
-
-        // Select specific: ensure content is centered vertically
-        .ant-select-selector {
-            display: flex !important;
-            align-items: center;
+        // Select specific
+        .ant-select:not(.ant-select-customize-input) .ant-select-selector {
+            height: $input-height !important;
+            padding: 0 8px;
 
             .ant-select-selection-item {
+                line-height: $input-height - 2px !important;
+                font-weight: 400;
+            }
+
+            .ant-select-selection-placeholder {
                 line-height: $input-height - 2px !important;
             }
         }
 
+        // Input Number specific
+        .ant-input-number-input {
+            padding: 0 8px;
+        }
+
         .ant-input-number-group-addon {
-            line-height: $input-height - 2px !important;
+            background: #fafafa;
+            border-radius: 0 $border-radius-sm $border-radius-sm 0;
+            border: 1px solid $border-color;
+            padding: 0 8px;
         }
     }
 
-    // Installment Configuration Area - Clean lines
+    // 5. Installment Config Box
     .installment-config-box {
-        margin-top: 12px;
-        background: #fbfbfb; // Subtle contrast
-        border: 1px dashed #d9d9d9; // Distinctive dashed border for "optional/extra" config
+        margin-top: 20px;
+        background: $background-color;
+        border: 1px solid $border-color;
         padding: 16px;
-        border-radius: 8px;
+        border-radius: $border-radius-md;
+        box-shadow: $shadow-sm;
+    }
 
-        h5.ant-typography {
-            color: $text-primary;
-            margin-bottom: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            margin-top: 0;
+    // 6. Schedule View
+    .schedule-view {
+        margin-top: 8px;
+
+        .pending-installment-card {
+            border: 1px solid #f0f0f0; // Clean border
+            background: #ffffff;
+            border-radius: 12px; // Slightly less rounded for "compact" feel
+            box-shadow: none; // Remove heavy shadow for compactness
+            margin-bottom: 24px;
+
+            // Decorative left strip - REMOVED
+
+            .ant-card-head {
+                border-bottom: 1px solid #f0f0f0;
+                padding: 0 16px;
+                min-height: 40px; // Compact header
+
+                .ant-card-head-title {
+                    padding: 12px 0;
+                    font-size: 14px;
+                    font-weight: 600;
+                }
+
+                .ant-tag {
+                    margin-right: 0;
+                    font-size: 11px;
+                }
+            }
+
+            .ant-card-body {
+                padding: 16px; // Tighter padding
+            }
+
+            .pending-content {
+                .row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 12px;
+
+                    .ant-typography-secondary {
+                        font-size: 13px;
+                        color: #8c8c8c;
+                    }
+
+                    .due-date {
+                        font-size: 14px;
+                        font-weight: 600;
+                        color: $text-primary;
+                        letter-spacing: -0.3px;
+                    }
+
+                    h4.ant-typography {
+                        font-size: 18px; // Smaller amount font
+                        font-weight: 700;
+                        color: #faad14; // Matching warning/accent
+                        margin: 0;
+                        letter-spacing: -0.5px;
+                    }
+                }
+
+                .ant-btn-primary {
+                    height: 36px; // Smaller button
+                    border-radius: 8px;
+                    font-size: 13px;
+                    font-weight: 400;
+                    box-shadow: none;
+
+                    &:hover {
+                        background: #434343;
+                        border-color: #434343;
+                    }
+
+                    &.ant-btn-dangerous {
+                        background: #ff4d4f;
+                        border-color: #ff4d4f;
+                    }
+                }
+            }
+        }
+
+        .completed-card {
+            margin-bottom: 24px;
+            border-radius: 16px;
+            border: none;
+            background: #f6ffed;
+            box-shadow: none;
+            border: 1px solid #b7eb8f;
+        }
+
+        // Timeline Styling (Clean/Native Look)
+        .ant-timeline {
+            margin-top: 8px;
+            margin-left: 4px;
+
+            .ant-timeline-item-tail {
+                border-left: 2px solid #f0f0f0; // Solid lighter line
+            }
+
+            // The Label (Date)
+            .ant-timeline-item-label {
+                width: calc(50% - 12px);
+                text-align: right;
+                padding-right: 12px;
+            }
+
+            // The Dot
+            .ant-timeline-item-head-custom {
+                background: transparent;
+            }
+
+            .ant-timeline-item-head {
+                background: #fff;
+                border: 2px solid #52c41a; // Green
+                width: 12px;
+                height: 12px;
+            }
+
+            // The Content (Right side)
+            .ant-timeline-item-content {
+                // margin-left: 28px; // Antd default handles this usually with label?
+                // Actually with mode='left' and label, content is on right.
+                // We just need to reset our previous 'card' styles.
+                padding-bottom: 24px;
+
+                .timeline-item-content {
+                    background: transparent;
+                    padding: 0;
+                    border: none;
+                    box-shadow: none;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-start; // Align text left
+
+                    .main-info {
+                        display: flex;
+                        gap: 2px;
+                    }
+
+                    .wallet-info {
+                        margin-top: 6px;
+                    }
+
+                    .wallet-chip {
+                        display: inline-flex;
+                        align-items: center;
+                        padding: 2px 8px;
+                        border-radius: 4px;
+                        background: #f5f5f5; // Slightly darker than white
+                        color: #6f6e6e;
+                        font-size: 11px;
+                        margin-top: 2px;
+
+                        span {
+                            line-height: 1.4;
+                            font-weight: 500;
+                        }
+                    }
+
+                    .wallet-text {
+                        color: #bfbfbf;
+                        font-size: 12px;
+                    }
+
+                    .ant-typography {
+                        display: block;
+
+                        & strong {
+                            font-size: 14px;
+                            color: $text-primary;
+                        }
+                    }
+
+                    .ant-typography-secondary {
+                        font-size: 14px;
+                        font-weight: 600;
+                        color: $secondary-color; // Green for paid amount
+                    }
+                }
+            }
+        }
+    }
+
+    // Animations
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
     }
 }
 
+// Payment Modal Customization
 .payment-modal {
     .ant-modal-content {
-        padding: 24px;
+        border-radius: 20px;
+        padding: 0;
+        overflow: hidden;
     }
 
     .ant-modal-header {
-        margin-bottom: 20px;
-        border-bottom: none;
+        border-bottom: 1px solid #f0f0f0;
+        padding-bottom: 10px;
 
         .ant-modal-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: $text-primary;
+            font-size: 17px; // Slightly smaller title
+            font-weight: 700;
         }
     }
 
-    .ant-modal-close {
-        top: 24px;
-        right: 24px;
+    .ant-modal-body {
+        padding: 10px 0;
     }
 
     .payment-modal-content {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .payment-info-row {
-        display: flex;
-        gap: 16px;
-
-        .payment-info-group {
-            flex: 1;
-        }
-    }
-
-    .payment-info-group {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-
-        &.full-width {
-            width: 100%;
-        }
-
-        .label {
-            font-size: 13px;
-            font-weight: 400;
-        }
-
-        .date-value {
-            font-size: 16px;
-            font-weight: 600;
-            color: $text-primary;
-        }
-
-        .amount-value {
-            font-size: 20px;
-            font-weight: 700;
-            color: $primary-color;
-            letter-spacing: -0.5px;
-        }
-    }
-
-    .wallet-select {
-        width: 100%;
-
-        .ant-select-selector {
-            border-radius: 10px !important;
-            height: 40px !important;
+        .info-box {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            border-color: #e0e0e0 !important;
+            border-bottom: 1px dashed #f0f0f0;
 
-            &:hover {
-                border-color: $primary-color !important;
+            &:last-child {
+                border-bottom: none;
             }
         }
-
-        .ant-select-selection-item {
-            line-height: 38px !important;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .ant-select-selection-placeholder {
-            line-height: 38px !important;
-        }
     }
 
-    // Footer Customization
     .ant-modal-footer {
-        margin-top: 32px;
+        margin: 0;
+        padding-top: 10px;
         border-top: none;
         display: flex;
-        gap: 12px;
-        width: 100%;
+        justify-content: center;
 
         .ant-btn {
-            flex: 1; // 50% width each
-            height: 40px;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 14px;
-            margin-inline-start: 0 !important; // Override ant design margin
-
-            &.ant-btn-default {
-                border-color: #d9d9d9;
-                color: $text-secondary;
-
-                &:hover {
-                    color: $text-primary;
-                    border-color: #bfbfbf;
-                    background: #f5f5f5;
-                }
-            }
-
-            &.ant-btn-primary {
-                background: $primary-color;
-                box-shadow: 0 4px 10px rgba($primary-color, 0.2);
-                border: none;
-
-                &:hover {
-                    box-shadow: 0 6px 15px rgba($primary-color, 0.3);
-                    transform: translateY(-1px);
-                }
-            }
+            height: 40px; // Slightly smaller button
+            border-radius: 10px;
+            font-weight: 600;
+            width: 100%;
         }
     }
 }
@@ -305,46 +500,5 @@
 .wallet-select-dropdown {
     border-radius: 12px;
     padding: 8px;
-
-    .ant-select-item {
-        border-radius: 8px;
-        padding: 10px 12px;
-        margin-bottom: 4px;
-
-        &.ant-select-item-option-selected {
-            background-color: rgba($primary-color, 0.08);
-            font-weight: 600;
-        }
-    }
-
-    .wallet-option-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-
-        .wallet-name {
-            font-weight: 500;
-            color: $text-primary;
-        }
-
-        .wallet-balance {
-            font-size: 13px;
-            color: $primary-color;
-            background: #e2e5f4;
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
-    }
-}
-
-.dashboard-loading-container {
-    height: calc(100vh - 104px);
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    justify-content: center;
-    align-items: center;
-    color: $primary-color;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
