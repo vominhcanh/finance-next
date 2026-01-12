@@ -1,6 +1,8 @@
-import { Drawer, Form, Input, Select, InputNumber, DatePicker, Row, Col, Button } from 'antd';
-import { useEffect } from 'react';
+import { Drawer, Form, Input, Select, InputNumber, DatePicker, Row, Col, Button, ColorPicker, Avatar } from 'antd';
+import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { WalletData, WalletForm, WalletType, WalletStatus } from '@/types/wallet.type';
+import { bankApi } from '@/api/bank.api';
 import dayjs from 'dayjs';
 import './WalletModal.scss';
 
@@ -18,6 +20,13 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
     const [form] = Form.useForm();
     const walletType = Form.useWatch('type', form);
 
+    const { data: banks } = useQuery({
+        queryKey: ['banks'],
+        queryFn: () => bankApi.getAll(),
+        enabled: open,
+        staleTime: 1000 * 60 * 60, // 1 hour
+    });
+    console.log(banks);
     useEffect(() => {
         if (open) {
             if (initialValues) {
@@ -25,17 +34,21 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
                     ...initialValues,
                     issuanceDate: initialValues.issuanceDate ? dayjs(initialValues.issuanceDate) : undefined,
                     expirationDate: initialValues.expirationDate ? dayjs(initialValues.expirationDate) : undefined,
+                    color: initialValues.color || '#1677ff', // Default color
                 });
             } else {
                 form.resetFields();
                 form.setFieldValue('type', WalletType.CASH);
                 form.setFieldValue('status', WalletStatus.ACTIVE);
+                form.setFieldValue('color', '#1677ff');
             }
         }
     }, [open, initialValues, form]);
 
     const handleFinish = async (values: any) => {
-        await onSubmit(values);
+        // Convert Color object to hex string if needed (Antd ColorPicker returns object)
+        const colorHex = typeof values.color === 'string' ? values.color : values.color?.toHexString();
+        await onSubmit({ ...values, color: colorHex });
         form.resetFields();
     };
 
@@ -48,9 +61,8 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
             placement="bottom"
             onClose={onCancel}
             open={open}
-            className="wallet-drawer"
+            rootClassName="wallet-drawer"
             footer={null} // Custom footer via Form.Item
-            height="auto"
         >
             <Form
                 form={form}
@@ -58,14 +70,19 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
                 onFinish={handleFinish}
                 requiredMark={false} // Cleaner look
             >
-                <Row gutter={16}>
-                    <Col span={24}>
+                <Row gutter={16} align="middle">
+                    <Col span={20}>
                         <Form.Item
                             name="name"
                             label="Tên Ví"
                             rules={[{ required: true, message: 'Vui lòng nhập tên ví' }]}
                         >
-                            <Input placeholder="Ví dụ: Tiền mặt, VCB Priority..." size="large" />
+                            <Input placeholder="Ví dụ: Tiền mặt, VCB Priority..." size="small" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={4}>
+                        <Form.Item name="color" label="Màu">
+                            <ColorPicker size="small" />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -119,8 +136,32 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
                     <>
                         <Row gutter={16}>
                             <Col span={24}>
-                                <Form.Item name="bankName" label="Tên Ngân Hàng">
-                                    <Input placeholder="Ví dụ: TPBank, Vietcombank..." size="large" />
+                                <Form.Item name="bankId" label="Ngân Hàng Liên Kết">
+                                    <Select
+                                        placeholder="Chọn ngân hàng"
+                                        size="small"
+                                        showSearch
+                                        popupClassName="bank-select-dropdown"
+                                        optionFilterProp="children"
+                                        filterOption={(input, option) =>
+                                            String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                        }
+                                        onChange={(value, option: any) => {
+                                            const selectedBank = Array.isArray(banks) ? banks.find(b => b._id === value) : undefined;
+                                            if (selectedBank && !form.getFieldValue('name')) {
+                                                form.setFieldValue('name', selectedBank.shortName + ' Account');
+                                            }
+                                        }}
+                                    >
+                                        {(Array.isArray(banks) ? banks : []).map(bank => (
+                                            <Option key={bank._id} value={bank._id} label={bank.shortName}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
+                                                    <span style={{ fontWeight: 500 }}>{bank.name}</span>
+                                                    <span style={{ color: '#000000', fontSize: 13 }}>({bank.code})</span>
+                                                </div>
+                                            </Option>
+                                        ))}
+                                    </Select>
                                 </Form.Item>
                             </Col>
                         </Row>

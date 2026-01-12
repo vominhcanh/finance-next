@@ -59,7 +59,8 @@ export const CategorySelect: React.FC<CategorySelectProps> = ({ value, onChange,
             value={value}
             onChange={onChange}
             size="small"
-            dropdownRender={(menu) => (
+            // @ts-ignore
+            popupRender={(menu) => (
                 <>
                     {menu}
                     <Divider style={{ margin: '8px 0' }} />

@@ -35,11 +35,21 @@ export interface Wallet extends BaseType {
     paymentDueDate?: number; // Days after statement or Day of month
     interestRate?: number; // % per year
     annualFee?: number;
+
+    // Bank Integration
+    bankId?: string;
+    logo?: string;
+    color?: string;
 }
 
 export interface WalletData extends Wallet {
     createdAt: string;
     updatedAt: string;
+    // Populated fields if any
+    bank?: {
+        logo: string;
+        shortName: string;
+    }
 }
 
 export interface WalletForm {
@@ -61,4 +71,9 @@ export interface WalletForm {
     paymentDueDate?: number;
     interestRate?: number;
     annualFee?: number;
+
+    // New fields
+    bankId?: string;
+    color?: string;
+    logo?: string;
 }

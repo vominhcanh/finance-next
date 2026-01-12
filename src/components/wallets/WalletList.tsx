@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Spin, Button, message } from 'antd';
+import { Spin, Button, message, Avatar } from 'antd';
 import {
     EyeOutlined,
     EyeInvisibleOutlined,
@@ -143,13 +143,33 @@ export const WalletList = () => {
                             key={wallet._id}
                             className={`wallet-card ${getCardThemeClass(index)}`}
                             onClick={() => handleEditWallet(wallet)}
-                            style={{ cursor: 'pointer' }}
+                            style={{
+                                cursor: 'pointer',
+                                background: wallet.color ? `linear-gradient(135deg, ${wallet.color} 0%, ${wallet.color}dd 100%)` : undefined,
+                                borderColor: wallet.color ? 'transparent' : undefined,
+                                color: wallet.color ? '#fff' : undefined
+                            }}
                         >
                             <div className="card-header">
                                 <div className="chip-icon">
-                                    {wallet.type === WalletType.CREDIT_CARD || wallet.type === WalletType.BANK ? '💳' : '💵'}
+                                    {/* Show Bank Logo if available */}
+                                    {wallet.logo || wallet.bank?.logo ? (
+                                        <img
+                                            src={wallet.logo || wallet.bank?.logo}
+                                            alt="logo"
+                                            style={{
+                                                height: 40,
+                                                width: 'auto',
+                                                maxWidth: 140,
+                                                objectFit: 'contain',
+                                                background: 'transparent'
+                                            }}
+                                        />
+                                    ) : (
+                                        wallet.type === WalletType.CREDIT_CARD || wallet.type === WalletType.BANK ? '💳' : '💵'
+                                    )}
                                 </div>
-                                <div className="card-type">
+                                <div className="card-type" style={{ color: wallet.color ? '#fff' : undefined }}>
                                     {wallet.type === WalletType.CREDIT_CARD ? 'Thẻ Tín Dụng' : wallet.type === WalletType.BANK ? 'Ngân Hàng' : 'Tiền Mặt'}
                                     <WifiOutlined rotate={90} />
                                 </div>
@@ -157,7 +177,7 @@ export const WalletList = () => {
 
                             <div className="card-center" style={{ flex: 1 }}>
                                 <div style={{ marginTop: 20, fontSize: 16, fontWeight: 600 }}>{wallet.name}</div>
-                                <div style={{ fontSize: 14, opacity: 0.8 }}>{wallet.bankName}</div>
+                                <div style={{ fontSize: 14, opacity: 0.8 }}>{wallet.bankName || wallet.bank?.shortName}</div>
                             </div>
 
                             <div className="card-footer">

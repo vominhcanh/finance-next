@@ -67,7 +67,13 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, isLo
                     size="middle"
                 />
             </div>
-
+            <Form.Item name="note" label="Ghi chú" rules={[{ required: true, message: 'Vui lòng nhập ghi chú' }]}>
+                <Input.TextArea
+                    rows={1}
+                    size='small'
+                    placeholder="Ghi chú thêm..."
+                />
+            </Form.Item>
             <Form.Item
                 name="amount"
                 label="Số tiền"
@@ -136,12 +142,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, isLo
                 </Form.Item>
             )}
 
-            <Form.Item name="note" label="Ghi chú">
-                <Input.TextArea
-                    rows={3}
-                    placeholder="Ghi chú thêm..."
-                />
-            </Form.Item>
+
 
             <Form.Item style={{ marginTop: 12 }}>
                 <Button

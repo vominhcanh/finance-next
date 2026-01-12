@@ -62,3 +62,9 @@ export const API_ANALYTICS = {
     categorySpending: (id: string) => `${V1}/transactions/stats/wallet/${id}/overview`,
     transactionsMonthly: `${V1}/analytics/transactions-monthly`,
 };
+
+// Bank API Paths
+export const API_BANK = {
+    getAll: `${V1}/banks`,
+    sync: `${V1}/banks/sync`,
+};

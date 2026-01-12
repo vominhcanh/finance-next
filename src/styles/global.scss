@@ -1,4 +1,4 @@
-@import './fonts.scss';
+@use './fonts.scss' as *;
 @import './variables.scss';
 @import './mixins.scss';
 
