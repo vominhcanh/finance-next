@@ -19,6 +19,11 @@ const { Option } = Select;
 export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }: WalletModalProps) => {
     const [form] = Form.useForm();
     const walletType = Form.useWatch('type', form);
+    const creditLimit = Form.useWatch('creditLimit', form);
+    const initialDebt = Form.useWatch('initialDebt', form);
+
+    const isCredit = walletType === WalletType.CREDIT_CARD;
+    const isNew = !initialValues;
 
     const { data: banks } = useQuery({
         queryKey: ['banks'],
@@ -35,6 +40,10 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
                     issuanceDate: initialValues.issuanceDate ? dayjs(initialValues.issuanceDate) : undefined,
                     expirationDate: initialValues.expirationDate ? dayjs(initialValues.expirationDate) : undefined,
                     color: initialValues.color || '#1677ff', // Default color
+                    // Pre-fill initialDebt for Credit Card edit
+                    initialDebt: initialValues.type === WalletType.CREDIT_CARD
+                        ? (initialValues.creditLimit || 0) - (initialValues.balance || 0)
+                        : undefined,
                 });
             } else {
                 form.resetFields();
@@ -48,12 +57,18 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
     const handleFinish = async (values: any) => {
         // Convert Color object to hex string if needed (Antd ColorPicker returns object)
         const colorHex = typeof values.color === 'string' ? values.color : values.color?.toHexString();
-        await onSubmit({ ...values, color: colorHex });
+        let submitValues = { ...values, color: colorHex };
+
+        // For Credit Card, calculate balance from Limit - Debt
+        if (walletType === WalletType.CREDIT_CARD) {
+            submitValues.balance = (Number(values.creditLimit) || 0) - (Number(values.initialDebt) || 0);
+        }
+
+        await onSubmit(submitValues);
         form.resetFields();
     };
 
     const isCard = [WalletType.BANK, WalletType.DEBIT_CARD, WalletType.CREDIT_CARD, WalletType.PREPAID_CARD].includes(walletType);
-    const isCredit = walletType === WalletType.CREDIT_CARD;
 
     return (
         <Drawer
@@ -113,24 +128,26 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
                     </Col>
                 </Row>
 
-                <Row gutter={16}>
-                    <Col span={24}>
-                        <Form.Item
-                            name="balance"
-                            label="Số Dư Hiện Tại"
-                            rules={[{ required: true, message: 'Vui lòng nhập số dư' }]}
-                        >
-                            <InputNumber
-                                style={{ width: '100%' }}
+                {(!isCredit) && (
+                    <Row gutter={16}>
+                        <Col span={24}>
+                            <Form.Item
+                                name="balance"
+                                label="Số Dư Hiện Tại"
+                                rules={[{ required: !isCredit, message: 'Vui lòng nhập số dư' }]}
+                            >
+                                <InputNumber
+                                    style={{ width: '100%' }}
 
-                                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
-                                suffix="VND"
-                                placeholder="0"
-                            />
-                        </Form.Item>
-                    </Col>
-                </Row>
+                                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                    parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
+                                    suffix="VND"
+                                    placeholder="0"
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                )}
 
                 {isCard && (
                     <>
@@ -200,7 +217,7 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
                 {isCredit && (
                     <>
                         <Row gutter={16}>
-                            <Col span={24}>
+                            <Col span={12}>
                                 <Form.Item
                                     name="creditLimit"
                                     label="Hạn Mức Tín Dụng"
@@ -215,7 +232,31 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
                                     />
                                 </Form.Item>
                             </Col>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="initialDebt"
+                                    label="Dư nợ hiện tại"
+                                    rules={[{ type: 'number', min: 0, message: 'Dư nợ không hợp lệ' }]}
+                                >
+                                    <InputNumber
+                                        style={{ width: '100%' }}
+                                        size="large"
+                                        formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                        parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
+                                        suffix="VND"
+                                        placeholder="0"
+                                    />
+                                </Form.Item>
+                            </Col>
                         </Row>
+                        {(creditLimit || initialDebt) ? (
+                            <div style={{ display: 'flex', justifyContent: 'flex-start', margin: 8 }}>
+                                <span style={{ color: '#666', marginRight: 8 }}>Số dư khả dụng:</span>
+                                <span style={{ fontWeight: 700, color: '#1677ff', fontSize: 15 }}>
+                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format((Number(creditLimit) || 0) - (Number(initialDebt) || 0))}
+                                </span>
+                            </div>
+                        ) : null}
                         <Row gutter={16}>
                             <Col span={8}>
                                 <Form.Item

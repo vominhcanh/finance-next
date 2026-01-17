@@ -103,7 +103,7 @@
             justify-content: space-between;
             position: relative;
             box-shadow: $shadow-sm;
-            transition: transform 0.2s;
+            // transition: transform 0.2s;
             flex-shrink: 0;
             overflow: hidden;
 
@@ -148,9 +148,9 @@
                 z-index: 1;
             }
 
-            &:hover {
-                transform: translateY(-4px);
-            }
+            // &:hover {
+            //     transform: translateY(-4px);
+            // }
 
             &.card-theme-0 {
                 background: linear-gradient(135deg, #ffffff 0%, #f0f2f5 100%);

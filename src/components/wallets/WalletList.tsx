@@ -176,7 +176,6 @@ export const WalletList = () => {
                                     borderWidth: 2,
                                     borderStyle: 'solid',
                                     color: wallet.color ? (isLightColor(wallet.color) ? '#000' : '#fff') : undefined,
-                                    transform: isActive ? 'scale(1.02)' : 'scale(1)',
                                     transition: 'all 0.3s ease'
                                 }}
                             >

@@ -102,8 +102,8 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, isLo
                 </Select>
             </Form.Item>
 
-            <Form.Item name="date" hidden>
-                <DatePicker />
+            <Form.Item name="date" label="Ngày giao dịch" rules={[{ required: true, message: 'Vui lòng chọn ngày giao dịch' }]}>
+                <DatePicker style={{ width: '100%' }} />
             </Form.Item>
 
             {type === TransactionType.TRANSFER ? (
