@@ -1,28 +1,22 @@
-import { Card, Table, Button } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { ArrowRightOutlined, PlusOutlined } from '@ant-design/icons';
+import { Empty, Space } from 'antd-mobile';
 
 export const BudgetList = () => {
     return (
-        <div className="budget-list">
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                <h2>Quản lý ngân sách</h2>
-                <Button type="primary" icon={<PlusOutlined />}>
-                    Thêm ngân sách
-                </Button>
+        <Space direction="vertical" block style={{ padding: 12, paddingBottom: 150, background: '#f5f5f5', minHeight: '100vh' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, cursor: 'pointer', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => window.history.back()}>
+                    <ArrowRightOutlined rotate={180} />
+                </div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: '#1f2c33' }}>Quản lý ngân sách</div>
+                <div style={{ width: 40, height: 40, borderRadius: 12, cursor: 'pointer', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <PlusOutlined />
+                </div>
             </div>
 
-            <Card>
-                <Table
-                    dataSource={[]}
-                    columns={[
-                        { title: 'Tên ngân sách', dataIndex: 'name', key: 'name' },
-                        { title: 'Số tiền', dataIndex: 'amount', key: 'amount' },
-                        { title: 'Đã chi', dataIndex: 'spent', key: 'spent' },
-                        { title: 'Còn lại', dataIndex: 'remaining', key: 'remaining' },
-                    ]}
-                    locale={{ emptyText: 'Chưa có ngân sách nào' }}
-                />
-            </Card>
-        </div>
+            <div style={{ background: '#fff', borderRadius: 16, padding: '24px 16px', border: '1px solid #f0f0f0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <Empty description="Chưa có ngân sách nào" />
+            </div>
+        </Space>
     );
 };

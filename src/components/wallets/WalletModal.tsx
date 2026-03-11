@@ -1,10 +1,9 @@
 import { bankApi } from '@/api/bank.api';
 import { WalletData, WalletForm, WalletStatus, WalletType } from '@/types/wallet.type';
 import { useQuery } from '@tanstack/react-query';
-import { Button, Col, ColorPicker, DatePicker, Drawer, Form, Input, InputNumber, Row, Select } from 'antd';
+import { Button, DatePicker, Form, Input, NumberKeyboard, Picker, Popup, VirtualInput } from 'antd-mobile';
 import dayjs from 'dayjs';
-import { useEffect } from 'react';
-import './WalletModal.scss';
+import { useEffect, useState, useRef } from 'react';
 
 interface WalletModalProps {
     open: boolean;
@@ -14,16 +13,67 @@ interface WalletModalProps {
     loading?: boolean;
 }
 
-const { Option } = Select;
+const AmountInput = ({ value, onChange, placeholder }: any) => {
+    const [visible, setVisible] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+            if (ref.current && !ref.current.contains(event.target as Node)) {
+                setVisible(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, []);
+
+    return (
+        <div ref={ref} style={{ position: 'relative', width: '100%' }}>
+            <VirtualInput
+                placeholder={placeholder}
+                value={value ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : ''}
+                onFocus={() => {
+                    setVisible(true);
+                }}
+                clearable
+                onClear={() => onChange?.('')}
+            />
+            <NumberKeyboard
+                visible={visible}
+                onClose={() => {
+                    setVisible(false);
+                }}
+                onInput={(v) => {
+                    onChange?.((value || '') + v);
+                }}
+                onDelete={() => {
+                    onChange?.((value || '').toString().slice(0, -1));
+                }}
+            />
+        </div>
+    );
+};
 
 export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }: WalletModalProps) => {
     const [form] = Form.useForm();
-    const walletType = Form.useWatch('type', form);
+    const walletTypeRaw = Form.useWatch('type', form);
+    const walletType = Array.isArray(walletTypeRaw) ? walletTypeRaw[0] : walletTypeRaw;
     const creditLimit = Form.useWatch('creditLimit', form);
     const initialDebt = Form.useWatch('initialDebt', form);
 
     const isCredit = walletType === WalletType.CREDIT_CARD;
-    const isNew = !initialValues;
+
+    const [typePickerVisible, setTypePickerVisible] = useState(false);
+    const [statusPickerVisible, setStatusPickerVisible] = useState(false);
+    const [bankPickerVisible, setBankPickerVisible] = useState(false);
+    const [cardTypePickerVisible, setCardTypePickerVisible] = useState(false);
+    const [issueDateVisible, setIssueDateVisible] = useState(false);
+    const [expDateVisible, setExpDateVisible] = useState(false);
 
     const { data: banks } = useQuery({
         queryKey: ['banks'],
@@ -31,35 +81,43 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
         enabled: open,
         staleTime: 1000 * 60 * 60, // 1 hour
     });
-    console.log(banks);
+
     useEffect(() => {
         if (open) {
             if (initialValues) {
                 form.setFieldsValue({
                     ...initialValues,
-                    issuanceDate: initialValues.issuanceDate ? dayjs(initialValues.issuanceDate) : undefined,
-                    expirationDate: initialValues.expirationDate ? dayjs(initialValues.expirationDate) : undefined,
-                    color: initialValues.color || '#1677ff', // Default color
-                    // Pre-fill initialDebt for Credit Card edit
+                    type: [initialValues.type],
+                    status: [initialValues.status],
+                    cardType: initialValues.cardType ? [initialValues.cardType] : undefined,
+                    bankId: initialValues.bankId ? [initialValues.bankId] : undefined,
+                    issuanceDate: initialValues.issuanceDate ? new Date(initialValues.issuanceDate) : undefined,
+                    expirationDate: initialValues.expirationDate ? new Date(initialValues.expirationDate) : undefined,
+                    color: initialValues.color || '#163f2a',
                     initialDebt: initialValues.type === WalletType.CREDIT_CARD
                         ? (initialValues.creditLimit || 0) - (initialValues.balance || 0)
                         : undefined,
                 });
             } else {
                 form.resetFields();
-                form.setFieldValue('type', WalletType.CASH);
-                form.setFieldValue('status', WalletStatus.ACTIVE);
-                form.setFieldValue('color', '#1677ff');
+                form.setFieldValue('type', [WalletType.CASH]);
+                form.setFieldValue('status', [WalletStatus.ACTIVE]);
+                form.setFieldValue('color', '#163f2a');
             }
         }
     }, [open, initialValues, form]);
 
-    const handleFinish = async (values: any) => {
-        // Convert Color object to hex string if needed (Antd ColorPicker returns object)
-        const colorHex = typeof values.color === 'string' ? values.color : values.color?.toHexString();
-        let submitValues = { ...values, color: colorHex };
+    const handleFinish = async (values: Record<string, unknown>) => {
+        const submitValues = { 
+            ...values,
+            type: Array.isArray(values.type) ? values.type[0] : values.type,
+            status: Array.isArray(values.status) ? values.status[0] : values.status,
+            bankId: Array.isArray(values.bankId) ? values.bankId[0] : values.bankId,
+            cardType: Array.isArray(values.cardType) ? values.cardType[0] : values.cardType,
+            issuanceDate: values.issuanceDate ? (values.issuanceDate as Date).toISOString() : undefined,
+            expirationDate: values.expirationDate ? (values.expirationDate as Date).toISOString() : undefined,
+        } as WalletForm;
 
-        // For Credit Card, calculate balance from Limit - Debt
         if (walletType === WalletType.CREDIT_CARD) {
             submitValues.balance = (Number(values.creditLimit) || 0) - (Number(values.initialDebt) || 0);
         }
@@ -70,229 +128,207 @@ export const WalletModal = ({ open, onCancel, onSubmit, initialValues, loading }
 
     const isCard = [WalletType.BANK, WalletType.DEBIT_CARD, WalletType.CREDIT_CARD, WalletType.PREPAID_CARD].includes(walletType);
 
+    const typeColumns = [[
+        { label: 'Tiền Mặt', value: WalletType.CASH },
+        { label: 'Ngân Hàng', value: WalletType.BANK },
+        { label: 'Thẻ Ghi Nợ', value: WalletType.DEBIT_CARD },
+        { label: 'Thẻ Tín Dụng', value: WalletType.CREDIT_CARD },
+        { label: 'Thẻ Trả Trước', value: WalletType.PREPAID_CARD },
+    ]];
+
+    const statusColumns = [[
+        { label: 'Hoạt Động', value: WalletStatus.ACTIVE },
+        { label: 'Đã Khóa', value: WalletStatus.LOCKED },
+    ]];
+
+    const bankColumns = [[
+        ...(Array.isArray(banks) ? banks : []).map(b => ({ label: `${b.shortName} (${b.code})`, value: b._id }))
+    ]];
+
+    const cardTypeColumns = [[
+        { label: 'VISA', value: 'VISA' },
+        { label: 'MasterCard', value: 'MASTER' },
+        { label: 'JCB', value: 'JCB' },
+        { label: 'Napas', value: 'NAPAS' }
+    ]];
+
     return (
-        <Drawer
-            title={initialValues ? 'Chỉnh Sửa Ví' : 'Thêm Ví Mới'}
-            placement="bottom"
-            onClose={onCancel}
-            open={open}
-            rootClassName="wallet-drawer"
-            footer={null} // Custom footer via Form.Item
+        <Popup
+            visible={open}
+            onMaskClick={onCancel}
+            bodyStyle={{ height: '85vh', borderTopLeftRadius: 16, borderTopRightRadius: 16, overflowY: 'auto' }}
         >
-            <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleFinish}
-                requiredMark={false} // Cleaner look
-            >
-                <Row gutter={16} align="middle">
-                    <Col span={20}>
-                        <Form.Item
-                            name="name"
-                            label="Tên Ví"
-                            rules={[{ required: true, message: 'Vui lòng nhập tên ví' }]}
-                        >
-                            <Input placeholder="Ví dụ: Tiền mặt, VCB Priority..." />
-                        </Form.Item>
-                    </Col>
-                    <Col span={4}>
-                        <Form.Item name="color" label="Màu">
-                            <ColorPicker />
-                        </Form.Item>
-                    </Col>
-                </Row>
+            <div style={{ padding: 16 }}>
+                <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, textAlign: 'center' }}>
+                    {initialValues ? 'Chỉnh Sửa Ví' : 'Thêm Ví Mới'}
+                </div>
+                <Form
+                    form={form}
+                    layout="vertical"
+                    mode="card"
+                    onFinish={handleFinish}
+                    footer={
+                        <Button color="primary" type="submit" loading={loading} block size="large" style={{ borderRadius: 8 }}>
+                            {initialValues ? 'Cập Nhật' : 'Thêm Ví Mới'}
+                        </Button>
+                    }
+                >
+                    <Form.Item name="name" label="Tên Ví" rules={[{ required: true, message: 'Vui lòng nhập tên ví' }]}>
+                        <Input placeholder="Ví dụ: Tiền mặt, VCB Priority..." clearable />
+                    </Form.Item>
 
-                <Row gutter={16}>
-                    <Col span={12}>
-                        <Form.Item
-                            name="type"
-                            label="Loại Ví"
-                            rules={[{ required: true, message: 'Vui lòng chọn loại ví' }]}
-                        >
-                            <Select  >
-                                <Option value={WalletType.CASH}>Tiền Mặt</Option>
-                                <Option value={WalletType.BANK}>Ngân Hàng</Option>
-                                <Option value={WalletType.DEBIT_CARD}>Thẻ Ghi Nợ</Option>
-                                <Option value={WalletType.CREDIT_CARD}>Thẻ Tín Dụng</Option>
-                                <Option value={WalletType.PREPAID_CARD}>Thẻ Trả Trước</Option>
-                            </Select>
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item name="status" label="Trạng Thái">
-                            <Select  >
-                                <Option value={WalletStatus.ACTIVE}>Hoạt Động</Option>
-                                <Option value={WalletStatus.LOCKED}>Đã Khóa</Option>
-                            </Select>
-                        </Form.Item>
-                    </Col>
-                </Row>
+                    <Form.Item name="color" label="Màu chủ đạo">
+                        <Input type="color" style={{ height: 40, width: '100%', padding: 0, border: 'none' }} />
+                    </Form.Item>
 
-                {(!isCredit) && (
-                    <Row gutter={16}>
-                        <Col span={24}>
-                            <Form.Item
-                                name="balance"
-                                label="Số Dư Hiện Tại"
-                                rules={[{ required: !isCredit, message: 'Vui lòng nhập số dư' }]}
+                    <Form.Item
+                        name="type"
+                        label="Loại Ví"
+                        rules={[{ required: true, message: 'Vui lòng chọn loại ví' }]}
+                        trigger="onConfirm"
+                        onClick={() => setTypePickerVisible(true)}
+                    >
+                        <Picker
+                            columns={typeColumns}
+                            visible={typePickerVisible}
+                            onClose={() => setTypePickerVisible(false)}
+                        >
+                            {items => items.every(item => item === null) ? 'Chọn loại ví' : items.map(item => item?.label).join('')}
+                        </Picker>
+                    </Form.Item>
+
+                    <Form.Item
+                        name="status"
+                        label="Trạng Thái"
+                        trigger="onConfirm"
+                        onClick={() => setStatusPickerVisible(true)}
+                    >
+                        <Picker
+                            columns={statusColumns}
+                            visible={statusPickerVisible}
+                            onClose={() => setStatusPickerVisible(false)}
+                        >
+                            {items => items.every(item => item === null) ? 'Chọn trạng thái' : items.map(item => item?.label).join('')}
+                        </Picker>
+                    </Form.Item>
+
+                    {(!isCredit) && (
+                        <Form.Item
+                            name="balance"
+                            label="Số Dư Hiện Tại (VND)"
+                            rules={[{ required: !isCredit, message: 'Vui lòng nhập số dư' }]}
+                        >
+                            <AmountInput placeholder="0" />
+                        </Form.Item>
+                    )}
+
+                    {isCard && (
+                        <>
+                            <Form.Item 
+                                name="bankId" 
+                                label="Ngân Hàng Liên Kết"
+                                trigger="onConfirm"
+                                onClick={() => setBankPickerVisible(true)}
                             >
-                                <InputNumber
-                                    style={{ width: '100%' }}
-
-                                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                    parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
-                                    suffix="VND"
-                                    placeholder="0"
-                                />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                )}
-
-                {isCard && (
-                    <>
-                        <Row gutter={16}>
-                            <Col span={24}>
-                                <Form.Item name="bankId" label="Ngân Hàng Liên Kết">
-                                    <Select
-                                        placeholder="Chọn ngân hàng"
-
-                                        showSearch
-                                        popupClassName="bank-select-dropdown"
-                                        optionFilterProp="children"
-                                        filterOption={(input, option) =>
-                                            String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                <Picker
+                                    columns={bankColumns}
+                                    visible={bankPickerVisible}
+                                    onClose={() => setBankPickerVisible(false)}
+                                    onConfirm={(val) => {
+                                        const selectedBank = Array.isArray(banks) ? banks.find(b => b._id === val[0]) : undefined;
+                                        if (selectedBank && !form.getFieldValue('name')) {
+                                            form.setFieldValue('name', selectedBank.shortName + ' Account');
                                         }
-                                        onChange={(value, option: any) => {
-                                            const selectedBank = Array.isArray(banks) ? banks.find(b => b._id === value) : undefined;
-                                            if (selectedBank && !form.getFieldValue('name')) {
-                                                form.setFieldValue('name', selectedBank.shortName + ' Account');
-                                            }
-                                        }}
-                                    >
-                                        {(Array.isArray(banks) ? banks : []).map(bank => (
-                                            <Option key={bank._id} value={bank._id} label={bank.shortName}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
-                                                    <span style={{ fontWeight: 400 }}>{bank.shortName}</span>
-                                                    <span style={{ color: '#000000', fontSize: 13 }}>({bank.code})</span>
-                                                </div>
-                                            </Option>
-                                        ))}
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row gutter={16}>
-                            <Col span={12}>
-                                <Form.Item name="maskedNumber" label="Số Thẻ (4 số cuối)">
-                                    <Input placeholder="**** 1234" maxLength={9} size="large" />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item name="cardType" label="Loại Thẻ">
-                                    <Select allowClear placeholder="Chọn loại">
-                                        <Option value="VISA">VISA</Option>
-                                        <Option value="MASTER">MasterCard</Option>
-                                        <Option value="JCB">JCB</Option>
-                                        <Option value="NAPAS">Napas</Option>
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row gutter={16}>
-                            <Col span={12}>
-                                <Form.Item name="issuanceDate" label="Ngày Phát Hành">
-                                    <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" placeholder="DD/MM/YYYY" size="large" />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item name="expirationDate" label="Ngày Hết Hạn">
-                                    <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" placeholder="DD/MM/YYYY" size="large" />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </>
-                )}
+                                    }}
+                                >
+                                    {items => items.every(item => item === null) ? 'Chọn ngân hàng' : items.map(item => item?.label).join('')}
+                                </Picker>
+                            </Form.Item>
 
-                {isCredit && (
-                    <>
-                        <Row gutter={16}>
-                            <Col span={12}>
-                                <Form.Item
-                                    name="creditLimit"
-                                    label="Hạn Mức Tín Dụng"
-                                    rules={[{ required: true, message: 'Vui lòng nhập hạn mức' }]}
-                                >
-                                    <InputNumber
-                                        style={{ width: '100%' }}
-                                        size="large"
-                                        formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                        parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
-                                        suffix="VND"
-                                    />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item
-                                    name="initialDebt"
-                                    label="Dư nợ hiện tại"
-                                    rules={[{ type: 'number', min: 0, message: 'Dư nợ không hợp lệ' }]}
-                                >
-                                    <InputNumber
-                                        style={{ width: '100%' }}
-                                        size="large"
-                                        formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                        parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
-                                        suffix="VND"
-                                        placeholder="0"
-                                    />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        {(creditLimit || initialDebt) ? (
-                            <div style={{ display: 'flex', justifyContent: 'flex-start', margin: 8 }}>
-                                <span style={{ color: '#666', marginRight: 8 }}>Số dư khả dụng:</span>
-                                <span style={{ fontWeight: 700, color: '#1677ff', fontSize: 15 }}>
-                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format((Number(creditLimit) || 0) - (Number(initialDebt) || 0))}
-                                </span>
-                            </div>
-                        ) : null}
-                        <Row gutter={16}>
-                            <Col span={8}>
-                                <Form.Item
-                                    name="statementDate"
-                                    label="Ngày Sao Kê"
-                                >
-                                    <InputNumber min={1} max={31} style={{ width: '100%' }} size="large" placeholder="VD: 20" />
-                                </Form.Item>
-                            </Col>
-                            <Col span={8}>
-                                <Form.Item
-                                    name="paymentDueDate"
-                                    label="Ngày Hạn"
-                                >
-                                    <InputNumber min={1} max={31} style={{ width: '100%' }} size="large" placeholder="VD: 5" />
-                                </Form.Item>
-                            </Col>
-                            <Col span={8}>
-                                <Form.Item name="annualFee" label="Phí Thường Niên">
-                                    <InputNumber
-                                        style={{ width: '100%' }}
-                                        size="large"
-                                        formatter={(val) => val ? `${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : ''}
-                                        parser={(val) => val?.replace(/\$\s?|(,*)/g, '') as unknown as number}
-                                        placeholder="0"
-                                    />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </>
-                )}
+                            <Form.Item name="maskedNumber" label="Số Thẻ (4 số cuối)">
+                                <Input placeholder="**** 1234" maxLength={9} clearable />
+                            </Form.Item>
 
-                <Button type="primary" htmlType="submit" className="submit-btn" loading={loading} block size="large">
-                    {initialValues ? 'Cập Nhật' : 'Thêm Ví Mới'}
-                </Button>
-            </Form>
-        </Drawer>
+                            <Form.Item 
+                                name="cardType" 
+                                label="Loại Thẻ"
+                                trigger="onConfirm"
+                                onClick={() => setCardTypePickerVisible(true)}
+                            >
+                                <Picker
+                                    columns={cardTypeColumns}
+                                    visible={cardTypePickerVisible}
+                                    onClose={() => setCardTypePickerVisible(false)}
+                                >
+                                    {items => items.every(item => item === null) ? 'Chọn loại thẻ' : items.map(item => item?.label).join('')}
+                                </Picker>
+                            </Form.Item>
+
+                            <Form.Item 
+                                name="issuanceDate" 
+                                label="Ngày Phát Hành"
+                                trigger="onConfirm"
+                                onClick={() => setIssueDateVisible(true)}
+                            >
+                                <DatePicker visible={issueDateVisible} onClose={() => setIssueDateVisible(false)}>
+                                    {value => value ? dayjs(value).format('DD/MM/YYYY') : 'Chọn ngày'}
+                                </DatePicker>
+                            </Form.Item>
+
+                            <Form.Item 
+                                name="expirationDate" 
+                                label="Ngày Hết Hạn"
+                                trigger="onConfirm"
+                                onClick={() => setExpDateVisible(true)}
+                            >
+                                <DatePicker visible={expDateVisible} onClose={() => setExpDateVisible(false)}>
+                                    {value => value ? dayjs(value).format('DD/MM/YYYY') : 'Chọn ngày'}
+                                </DatePicker>
+                            </Form.Item>
+                        </>
+                    )}
+
+                    {isCredit && (
+                        <>
+                            <Form.Item
+                                name="creditLimit"
+                                label="Hạn Mức Tín Dụng (VND)"
+                                rules={[{ required: true, message: 'Vui lòng nhập hạn mức' }]}
+                            >
+                                <AmountInput placeholder="0" />
+                            </Form.Item>
+
+                            <Form.Item
+                                name="initialDebt"
+                                label="Dư nợ hiện tại (VND)"
+                            >
+                                <AmountInput placeholder="0" />
+                            </Form.Item>
+
+                            {(creditLimit || initialDebt) ? (
+                                <div style={{ display: 'flex', justifyContent: 'flex-start', margin: '8px 16px' }}>
+                                    <span style={{ color: '#666', marginRight: 8 }}>Số dư khả dụng:</span>
+                                    <span style={{ fontWeight: 700, color: 'var(--adm-color-primary)', fontSize: 15 }}>
+                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format((Number(creditLimit) || 0) - (Number(initialDebt) || 0))}
+                                    </span>
+                                </div>
+                            ) : null}
+
+                            <Form.Item name="statementDate" label="Ngày Sao Kê (1-31)">
+                                <Input type="number" min={1} max={31} placeholder="VD: 20" clearable />
+                            </Form.Item>
+
+                            <Form.Item name="paymentDueDate" label="Ngày Hạn (1-31)">
+                                <Input type="number" min={1} max={31} placeholder="VD: 5" clearable />
+                            </Form.Item>
+
+                            <Form.Item name="annualFee" label="Phí Thường Niên (VND)">
+                                <AmountInput placeholder="0" />
+                            </Form.Item>
+                        </>
+                    )}
+                </Form>
+            </div>
+        </Popup>
     );
 };

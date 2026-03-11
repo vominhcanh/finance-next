@@ -1,46 +1,82 @@
 import { useMutateDebt, useQueryDebt } from '@/queryHooks/debt';
 import { useQueryWallets } from '@/queryHooks/wallet';
 import { DebtType, InstallmentStatus } from '@/types/debt.type';
-import { ArrowLeftOutlined, CheckCircleOutlined, ClockCircleOutlined, DollarOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
+import { ArrowRightOutlined, CheckCircleOutlined, CheckOutlined, ClockCircleOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import { useNavigate } from '@tanstack/react-router';
 import { formatCurrency } from '@utils/format.utils';
-import { Button, Card, Col, DatePicker, Form, Input, InputNumber, Modal, Progress, Row, Select, Spin, Tag, Timeline, Typography } from 'antd';
+import { Button, DatePicker, Form, Input, NumberKeyboard, Picker, Popup, ProgressBar, Space, SpinLoading, Tag, VirtualInput, Steps } from 'antd-mobile';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
-import './DebtForm.scss';
-
-const { Title, Text } = Typography;
-const { Option } = Select;
 
 interface DebtFormProps {
     id?: string;
     mode: 'create' | 'view';
 }
 
+const AmountInput = ({ value, onChange, placeholder }: any) => {
+    const [visible, setVisible] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+            if (ref.current && !ref.current.contains(event.target as Node)) {
+                setVisible(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, []);
+
+    return (
+        <div ref={ref} style={{ position: 'relative', width: '100%' }}>
+            <VirtualInput
+                placeholder={placeholder}
+                value={value ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : ''}
+                onFocus={() => setVisible(true)}
+                clearable
+                onClear={() => onChange?.('')}
+            />
+            <NumberKeyboard
+                visible={visible}
+                onClose={() => setVisible(false)}
+                onInput={(v) => onChange?.((value || '') + v)}
+                onDelete={() => onChange?.((value || '').toString().slice(0, -1))}
+            />
+        </div>
+    );
+};
+
 export const DebtFormParam = ({ id }: DebtFormProps) => {
     const navigate = useNavigate();
     const [form] = Form.useForm();
     const { create, update, payInstallment } = useMutateDebt();
 
-    // Query Data
     const isCreate = !id;
     const { data: debt, isLoading, refetch } = useQueryDebt(id || '', !isCreate);
     const { data: wallets } = useQueryWallets();
 
-    // Local State
     const [activeTab, setActiveTab] = useState('1');
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
     const [selectedInstallment, setSelectedInstallment] = useState<any>(null);
     const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
 
-    const isInstallmentValue = Form.useWatch('isInstallment', form);
+    const [typePickerVisible, setTypePickerVisible] = useState(false);
+    const [installmentPickerVisible, setInstallmentPickerVisible] = useState(false);
+    const [startDateVisible, setStartDateVisible] = useState(false);
+    const [walletPickerVisible, setWalletPickerVisible] = useState(false);
+
+    const isInstallmentValue = Form.useWatch('isInstallment', form)?.[0] || Form.useWatch('isInstallment', form);
     const totalAmountValue = Form.useWatch('totalAmount', form);
     const totalMonthsValue = Form.useWatch('totalMonths', form);
 
     const isInstallment = isInstallmentValue === 1;
 
-    // Auto-calculate monthly payment
     useEffect(() => {
         if (isCreate && isInstallment && totalAmountValue && totalMonthsValue) {
             const monthly = Math.ceil(totalAmountValue / totalMonthsValue);
@@ -48,22 +84,28 @@ export const DebtFormParam = ({ id }: DebtFormProps) => {
         }
     }, [totalAmountValue, totalMonthsValue, isInstallment, isCreate, form]);
 
-    // Initial Form Data
     useEffect(() => {
         if (debt && !isCreate) {
             form.setFieldsValue({
                 ...debt,
-                startDate: debt.startDate ? dayjs(debt.startDate) : undefined,
-                // Ensure isInstallment comes as number from API, but just in case
-                isInstallment: debt.isInstallment ? 1 : 0,
+                type: [debt.type],
+                isInstallment: [debt.isInstallment ? 1 : 0],
+                startDate: debt.startDate ? new Date(debt.startDate) : undefined,
+            });
+        } else {
+            form.setFieldsValue({
+                type: [DebtType.LOAN],
+                isInstallment: [0],
+                startDate: new Date(),
             });
         }
     }, [debt, form, isCreate]);
 
-    // Handlers
     const onFinish = (values: any) => {
         const payload = {
             ...values,
+            type: values.type?.[0] || values.type,
+            isInstallment: values.isInstallment?.[0] || values.isInstallment,
             startDate: values.startDate ? values.startDate.toISOString() : undefined,
         };
 
@@ -99,9 +141,6 @@ export const DebtFormParam = ({ id }: DebtFormProps) => {
         );
     };
 
-    // --- RENDER SECTIONS ---
-
-    // 1. Header Card (For Detail View)
     const renderHeaderStats = () => {
         if (isCreate || !debt) return null;
 
@@ -110,215 +149,177 @@ export const DebtFormParam = ({ id }: DebtFormProps) => {
         const percent = Math.round((paidMonths / totalMonths) * 100);
 
         return (
-            <Card className="debt-header-card" bordered={false}>
-                <Row gutter={[24, 16]} align="middle">
-                    <Col xs={24} md={8}>
-                        <div className="stat-item">
-                            <Text type="secondary">Còn lại phải trả</Text>
-                            <Title level={3} style={{ margin: 0, color: '#ff4d4f' }}>
-                                {formatCurrency(debt.remainingAmount || 0)}
-                            </Title>
-                        </div>
-                    </Col>
-                    <Col xs={24} md={16}>
-                        <div className="progress-section">
-                            <div className="progress-info">
-                                <Text strong>Tiến độ trả nợ</Text>
-                                <Text>{paidMonths} / {totalMonths} tháng</Text>
-                            </div>
-                            <Progress percent={percent} strokeColor="#1890ff" trailColor="#f0f0f0" />
-                        </div>
-                    </Col>
-                </Row>
-            </Card>
+            <div style={{ background: '#fff', borderRadius: 16, padding: 24, marginBottom: 24, border: '1px solid #f0f0f0' }}>
+                <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                    <div style={{ fontSize: 14, color: '#8c8c8c', marginBottom: 8 }}>Còn lại phải trả</div>
+                    <div style={{ fontSize: 32, fontWeight: 800, color: '#ff4d4f', lineHeight: 1.2, letterSpacing: '-0.5px' }}>
+                        {formatCurrency(debt.remainingAmount || 0)}
+                    </div>
+                </div>
+                <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 14, fontWeight: 500, color: '#8c8c8c' }}>
+                        <span style={{ fontWeight: 600, color: '#1f2c33' }}>Tiến độ trả nợ</span>
+                        <span>{paidMonths} / {totalMonths} tháng</span>
+                    </div>
+                    <ProgressBar percent={percent} style={{ '--track-width': '10px', '--fill-color': '#1890ff', borderRadius: 100 }} />
+                </div>
+            </div>
         );
     };
 
-    // 2. Form Content
     const renderFormContent = () => (
         <Form
             form={form}
             layout="vertical"
+            mode="card"
             onFinish={onFinish}
-            initialValues={{
-                type: DebtType.LOAN,
-                isInstallment: 0,
-                startDate: dayjs(),
-            }}
-            className="form-section API-form"
+            footer={
+                <Button color="primary" type="submit" block size="large" style={{ borderRadius: 8 }}>
+                    {isCreate ? 'Thêm Khoản Vay' : 'Cập Nhật'}
+                </Button>
+            }
         >
-            <Row gutter={[16, 0]}>
-                <Col span={24}>
-                    <Form.Item name="partnerName" label="Tên đối tác" rules={[{ required: true }]}>
-                        <Input placeholder="Ví dụ: Ngân hàng ABC..." />
-                    </Form.Item>
-                </Col>
-                <Col span={24}>
-                    <Form.Item name="totalAmount" label="Tổng số tiền" rules={[{ required: true }]}>
-                        <InputNumber
+            <Form.Item name="partnerName" label="Tên đối tác" rules={[{ required: true }]}>
+                <Input placeholder="Ví dụ: Ngân hàng ABC..." clearable />
+            </Form.Item>
 
-                            style={{ width: '100%' }}
-                            formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                            parser={value => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
-                            suffix="VND"
-                            prefix={<DollarOutlined />}
-                        />
-                    </Form.Item>
-                </Col>
+            <Form.Item name="totalAmount" label="Tổng số tiền (VND)" rules={[{ required: true }]}>
+                <AmountInput placeholder="0" />
+            </Form.Item>
 
-                <Col span={12}>
-                    <Form.Item name="type" label="Loại nợ" rules={[{ required: true }]}>
-                        <Select  >
-                            <Option value={DebtType.LOAN}>Đi vay</Option>
-                            <Option value={DebtType.LEND}>Cho vay</Option>
-                        </Select>
-                    </Form.Item>
-                </Col>
+            <Form.Item
+                name="type"
+                label="Loại nợ"
+                rules={[{ required: true }]}
+                trigger="onConfirm"
+                onClick={() => setTypePickerVisible(true)}
+            >
+                <Picker
+                    columns={[[
+                        { label: 'Đi vay', value: DebtType.LOAN },
+                        { label: 'Cho vay', value: DebtType.LEND },
+                    ]]}
+                    visible={typePickerVisible}
+                    onClose={() => setTypePickerVisible(false)}
+                >
+                    {items => items.every(item => item === null) ? 'Chọn loại nợ' : items.map(item => item?.label).join('')}
+                </Picker>
+            </Form.Item>
 
-                <Col span={12}>
-                    <Form.Item name="isInstallment" label="Hình thức trả">
-                        <Select
-
-                            disabled={!isCreate} // Disable changing structure after creation
-                            options={[
-                                { label: 'Trả 1 lần', value: 0 },
-                                { label: 'Trả góp', value: 1 }
-                            ]}
-                        />
-                    </Form.Item>
-                </Col>
-
-                {/* Always show startDate if isInstallment=1, or optional/hidden logic? Requirement says Show if isInstallment=1 */}
-                {isInstallment && (
-                    <Col span={24}>
-                        <Form.Item
-                            name="startDate"
-                            label="Ngày bắt đầu tính lãi/trả"
-                            rules={[{ required: true }]}
-                            tooltip="Ngày bắt đầu trả nợ. Các kỳ trong quá khứ sẽ được đánh dấu là Đã Trả."
-                        >
-                            <DatePicker
-
-                                style={{ width: '100%' }}
-                                format="DD/MM/YYYY"
-                                disabled={!isCreate} // Cannot change start date after creation
-                            />
-                        </Form.Item>
-                    </Col>
-                )}
-            </Row>
+            <Form.Item
+                name="isInstallment"
+                label="Hình thức trả"
+                trigger="onConfirm"
+                onClick={() => { if (isCreate) setInstallmentPickerVisible(true); }}
+            >
+                <Picker
+                    columns={[[
+                        { label: 'Trả 1 lần', value: 0 },
+                        { label: 'Trả góp', value: 1 }
+                    ]]}
+                    visible={installmentPickerVisible}
+                    onClose={() => setInstallmentPickerVisible(false)}
+                >
+                    {items => items.every(item => item === null) ? 'Chọn hình thức trả' : items.map(item => item?.label).join('')}
+                </Picker>
+            </Form.Item>
 
             {isInstallment && (
-                <div className="installment-config-box">
-                    <Title level={5} className="box-title"><ClockCircleOutlined /> Cấu hình trả góp</Title>
-                    <Row gutter={[16, 0]}>
-                        <Col span={12}>
-                            <Form.Item name="totalMonths" label="Tổng số tháng" rules={[{ required: true }]}>
-                                <InputNumber style={{ width: '100%' }} min={1} disabled={!isCreate} />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item name="paymentDate" label="Ngày trả (1-31)" rules={[{ required: true }]}>
-                                <InputNumber style={{ width: '100%' }} min={1} max={31} />
-                            </Form.Item>
-                        </Col>
-                        <Col span={24}>
-                            <Form.Item name="monthlyPayment" label="Số tiền/tháng">
-                                <InputNumber
-
-                                    style={{ width: '100%' }}
-                                    formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                    parser={value => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
-                                    placeholder="Tự động tính nếu để trống"
-                                />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                </div>
+                <Form.Item
+                    name="startDate"
+                    label="Ngày bắt đầu tính lãi/trả"
+                    rules={[{ required: true }]}
+                    trigger="onConfirm"
+                    onClick={() => { if (isCreate) setStartDateVisible(true); }}
+                >
+                    <DatePicker visible={startDateVisible} onClose={() => setStartDateVisible(false)}>
+                        {value => value ? dayjs(value).format('DD/MM/YYYY') : 'Chọn ngày'}
+                    </DatePicker>
+                </Form.Item>
             )}
 
-
+            {isInstallment && (
+                <div style={{ background: '#fafafa', padding: 16, borderRadius: 8, marginTop: 16, border: '1px solid #f0f0f0' }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                        <ClockCircleOutlined /> Cấu hình trả góp
+                    </div>
+                    <Form.Item name="totalMonths" label="Tổng số tháng" rules={[{ required: true }]}>
+                        <Input type="number" min={1} placeholder="Ví dụ: 12" disabled={!isCreate} clearable />
+                    </Form.Item>
+                    <Form.Item name="paymentDate" label="Ngày trả (1-31)" rules={[{ required: true }]}>
+                        <Input type="number" min={1} max={31} placeholder="Ví dụ: 15" clearable />
+                    </Form.Item>
+                    <Form.Item name="monthlyPayment" label="Số tiền/tháng (VND)">
+                        <AmountInput placeholder="Tự động tính nếu để trống" />
+                    </Form.Item>
+                </div>
+            )}
         </Form>
     );
 
-    // 3. Schedule View (History + Pending)
     const renderScheduleView = () => {
         if (!debt?.installments) return <div style={{ padding: 20, textAlign: 'center' }}>Chưa có dữ liệu lịch trả nợ</div>;
 
         const history = debt.installments.filter((i: any) => i.status === InstallmentStatus.PAID);
-        const pending = debt.installments.find((i: any) => i.status !== InstallmentStatus.PAID); // Get first pending/overdue
+        const pending = debt.installments.find((i: any) => i.status !== InstallmentStatus.PAID);
 
         return (
-            <div className="schedule-view">
-                {/* Pending Card - Priority */}
+            <div style={{ marginTop: 8 }}>
                 {pending && (
-                    <Card
-                        className="pending-installment-card"
-                        title={`Kỳ thanh toán tiếp theo (Kỳ ${history.length + 1})`}
-                        extra={<Tag color="volcano">Cần thanh toán</Tag>}
-                    >
-                        <div className="pending-content">
-                            <div className="row">
-                                <Text type="secondary">Hạn trả:</Text>
-                                <Text strong className="due-date">{dayjs(pending.dueDate).format('DD/MM/YYYY')}</Text>
+                    <div style={{ border: '1px solid #f0f0f0', borderRadius: 12, marginBottom: 24, background: '#fff' }}>
+                        <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ fontSize: 14, fontWeight: 600 }}>Kỳ thanh toán tiếp theo (Kỳ {history.length + 1})</div>
+                            <Tag color="danger">Cần thanh toán</Tag>
+                        </div>
+                        <div style={{ padding: 16 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                                <span style={{ color: '#8c8c8c', fontSize: 13 }}>Hạn trả:</span>
+                                <span style={{ fontSize: 14, fontWeight: 600 }}>{dayjs(pending.dueDate).format('DD/MM/YYYY')}</span>
                             </div>
-                            <div className="row">
-                                <Text type="secondary">Số tiền:</Text>
-                                <Title level={4} style={{ margin: 0 }}>{formatCurrency(pending.amount)}</Title>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                                <span style={{ color: '#8c8c8c', fontSize: 13 }}>Số tiền:</span>
+                                <span style={{ fontSize: 18, fontWeight: 700, color: '#faad14' }}>{formatCurrency(pending.amount)}</span>
                             </div>
-                            <Button
-                                type='primary'
-                                block
-                                style={{ marginTop: 16 }}
-                                onClick={() => handleOpenPaymentModal(pending)}
-                            >
+                            <Button color="primary" block style={{ marginTop: 16, borderRadius: 8 }} onClick={() => handleOpenPaymentModal(pending)}>
                                 THANH TOÁN KỲ NÀY
                             </Button>
                         </div>
-                    </Card>
+                    </div>
                 )}
 
                 {!pending && debt.remainingAmount === 0 && (
-                    <Card className="completed-card">
-                        <div style={{ textAlign: 'center', padding: 20 }}>
-                            <CheckCircleOutlined style={{ fontSize: 48, color: '#52c41a', marginBottom: 16 }} />
-                            <Title level={4}>Khoản nợ đã hoàn tất!</Title>
-                        </div>
-                    </Card>
+                    <div style={{ border: '1px solid #b7eb8f', borderRadius: 16, padding: 20, textAlign: 'center', background: '#f6ffed', marginBottom: 24 }}>
+                        <CheckCircleOutlined style={{ fontSize: 48, color: '#52c41a', marginBottom: 16 }} />
+                        <div style={{ fontSize: 16, fontWeight: 600 }}>Khoản nợ đã hoàn tất!</div>
+                    </div>
                 )}
 
-                {/* History Timeline */}
-                <div style={{ marginTop: 24, padding: '0 10px' }}>
-                    <Title level={5} style={{ marginBottom: 20 }}>Lịch sử thanh toán</Title>
-                    <Timeline
-                        mode="left"
-                        items={history.map((item: any, idx: number) => ({
-                            color: '#52c41a', // Explicit green
-                            label: <span style={{ fontSize: 13, color: '#8c8c8c' }}>{dayjs(item.paidAt || item.dueDate).format('DD/MM/YYYY')}</span>,
-                            children: (
-                                <div className="timeline-item-content">
-                                    <div className="main-info">
-                                        <div className="period-text">Kỳ {idx + 1}</div> /
-                                        <Tag className="amount-text" color="red">
-                                            {formatCurrency(item.amount)}
-                                        </Tag>
+                <div style={{ padding: '0 10px', marginTop: 24 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 20 }}>Lịch sử thanh toán</div>
+                    <Steps direction="vertical">
+                        {history.map((item: any, idx: number) => (
+                            <Steps.Step
+                                key={idx}
+                                title={
+                                    <div style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                        <div style={{ fontWeight: 600 }}>Kỳ {idx + 1}</div> / 
+                                        <Tag color="danger" style={{ marginLeft: 4 }}>{formatCurrency(item.amount)}</Tag>
                                     </div>
-                                    {/* Wallet Info Supplement */}
-                                    {(item.walletId || item.walletName) && (
-                                        <div className="wallet-info">
-                                            {item.walletId ? (
-                                                <div className="wallet-chip">
-                                                    <span>{item.walletId.name}</span>
-                                                </div>
-                                            ) : (
-                                                <span className="wallet-text">{item.walletName}</span>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            )
-                        }))}
-                    />
+                                }
+                                description={
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                        <div style={{ fontSize: 13, color: '#8c8c8c' }}>{dayjs(item.paidAt || item.dueDate).format('DD/MM/YYYY')}</div>
+                                        {(item.walletId || item.walletName) && (
+                                            <div style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 4, background: '#f5f5f5', color: '#6f6e6e', fontSize: 11, marginTop: 4 }}>
+                                                <span>{item.walletId ? item.walletId.name : item.walletName}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                }
+                                status="finish"
+                            />
+                        ))}
+                    </Steps>
                     {history.length === 0 && <div style={{ textAlign: 'center', color: '#8c8c8c', padding: '20px 0' }}>Chưa có lịch sử thanh toán</div>}
                 </div>
             </div>
@@ -327,94 +328,86 @@ export const DebtFormParam = ({ id }: DebtFormProps) => {
 
     if (isLoading) {
         return (
-            <div className="dashboard-loading-container">
-                <Spin />
-                <div className="loading-text">Đang tải dữ liệu...</div>
+            <div style={{ height: 'calc(100vh - 104px)', display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center', justifyContent: 'center' }}>
+                <SpinLoading color="primary" />
+                <div style={{ color: 'var(--adm-color-primary)' }}>Đang tải dữ liệu...</div>
             </div>
         );
     }
 
     return (
-        <div className="debt-form-container">
-            <div className="custom-header">
-                <div className="icon-btn back-btn" onClick={() => navigate({ to: '/debts' })}>
-                    <ArrowLeftOutlined />
+        <Space direction="vertical" block style={{ padding: 16, paddingBottom: 150, background: '#f5f5f5', minHeight: '100vh' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, cursor: 'pointer', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => navigate({ to: '/debts' })}>
+                    <ArrowRightOutlined rotate={180} />
                 </div>
-                <div className="page-title">
+                <div style={{ fontSize: 18, fontWeight: 700, color: '#1f2c33', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     {isCreate ? 'Thêm khoản nợ' : 'Chi tiết khoản nợ'}
                 </div>
-                <div className="icon-btn action-btn" onClick={() => form.submit()}>
-                    {(isCreate || activeTab === '1') && (
-                        isCreate ? <PlusOutlined /> : <SaveOutlined />
-                    )}
+                <div style={{ width: 40, height: 40, borderRadius: 12, cursor: 'pointer', background: '#fff', color: 'var(--adm-color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => form.submit()}>
+                    <CheckOutlined />
                 </div>
             </div>
 
-            {/* Render Header Stats if viewing detail */}
             {!isCreate && renderHeaderStats()}
 
-            {/* Logic to switch between Form and Schedule in View Mode */}
             {isCreate ? renderFormContent() : (
-                <div className="detail-tabs-container">
-                    <div className="tab-switcher">
-                        <div className={`tab-item ${activeTab === '1' ? 'active' : ''}`} onClick={() => setActiveTab('1')}>Thông tin</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                    <div style={{ display: 'flex', background: '#e5e5e5', padding: 4, borderRadius: 8 }}>
+                        <div
+                            onClick={() => setActiveTab('1')}
+                            style={{ flex: 1, textAlign: 'center', padding: '10px 0', fontSize: 14, fontWeight: activeTab === '1' ? 600 : 500, color: activeTab === '1' ? '#1f2c33' : '#8c8c8c', background: activeTab === '1' ? '#fff' : 'transparent', borderRadius: 6, boxShadow: activeTab === '1' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none', cursor: 'pointer', transition: 'all 0.3s ease' }}
+                        >Thông tin</div>
                         {isInstallment && (
-                            <div className={`tab-item ${activeTab === '2' ? 'active' : ''}`} onClick={() => setActiveTab('2')}>Lịch trả nợ</div>
+                            <div
+                                onClick={() => setActiveTab('2')}
+                                style={{ flex: 1, textAlign: 'center', padding: '10px 0', fontSize: 14, fontWeight: activeTab === '2' ? 600 : 500, color: activeTab === '2' ? '#1f2c33' : '#8c8c8c', background: activeTab === '2' ? '#fff' : 'transparent', borderRadius: 6, boxShadow: activeTab === '2' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none', cursor: 'pointer', transition: 'all 0.3s ease' }}
+                            >Lịch trả nợ</div>
                         )}
                     </div>
-
-                    <div className="tab-content">
+                    <div>
                         {activeTab === '1' && renderFormContent()}
                         {activeTab === '2' && renderScheduleView()}
                     </div>
                 </div>
             )}
 
-            <Modal
-                title="Thanh toán kỳ trả góp"
-                open={paymentModalOpen}
-                centered
-                onCancel={() => setPaymentModalOpen(false)}
-                onOk={handleConfirmPayment}
-                okText="Xác nhận"
-                cancelText="Đóng"
-                confirmLoading={payInstallment.isPending}
-                className="payment-modal"
-                width={400}
+            <Popup
+                visible={paymentModalOpen}
+                onMaskClick={() => setPaymentModalOpen(false)}
+                bodyStyle={{ borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 16, minHeight: '40vh' }}
             >
-                {selectedInstallment && (
-                    <div className="payment-modal-content">
-                        <div className="info-box">
-                            <Text type="secondary">Kỳ hạn:</Text>
-                            <Text strong>{dayjs(selectedInstallment.dueDate).format('DD/MM/YYYY')}</Text>
+                <div>
+                    <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, textAlign: 'center' }}>Thanh toán kỳ trả góp</div>
+                    {selectedInstallment && (
+                        <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #f0f0f0', paddingBottom: 12, marginBottom: 12 }}>
+                                <span style={{ color: '#8c8c8c' }}>Kỳ hạn:</span>
+                                <span>{dayjs(selectedInstallment.dueDate).format('DD/MM/YYYY')}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #f0f0f0', paddingBottom: 12, marginBottom: 12 }}>
+                                <span style={{ color: '#8c8c8c' }}>Số tiền:</span>
+                                <span style={{ fontSize: 18, color: '#1890ff', fontWeight: 600 }}>{formatCurrency(selectedInstallment.amount)}</span>
+                            </div>
+                            <div style={{ marginTop: 24, padding: 10 }}>
+                                <div style={{ fontSize: 14, color: '#8c8c8c', marginBottom: 8 }}>Nguồn tiền thanh toán</div>
+                                <div onClick={() => setWalletPickerVisible(true)} style={{ padding: '12px 16px', background: '#f5f5f5', borderRadius: 8, fontSize: 16 }}>
+                                    {selectedWalletId ? wallets?.find((w: any) => w._id === selectedWalletId)?.name : 'Chọn ví thanh toán'}
+                                </div>
+                                <Picker
+                                    columns={[[...(wallets || []).map((w: any) => ({ label: `${w.name} (${formatCurrency(w.balance)})`, value: w._id }))]]}
+                                    visible={walletPickerVisible}
+                                    onClose={() => setWalletPickerVisible(false)}
+                                    onConfirm={(val) => setSelectedWalletId(val[0]?.toString() || null)}
+                                />
+                            </div>
+                            <Button color="primary" block style={{ marginTop: 24, borderRadius: 8 }} onClick={handleConfirmPayment}>
+                                Xác nhận
+                            </Button>
                         </div>
-                        <div className="info-box">
-                            <Text type="secondary">Số tiền:</Text>
-                            <Text strong style={{ fontSize: 18, color: '#1890ff' }}>{formatCurrency(selectedInstallment.amount)}</Text>
-                        </div>
-                        <div style={{ marginTop: 20 }}>
-                            <Select
-                                className="wallet-select"
-                                placeholder="Chọn ví thanh toán"
-                                style={{ width: '100%' }}
-                                value={selectedWalletId}
-                                onChange={setSelectedWalletId}
-                                optionLabelProp="label"
-                                size='middle'
-                            >
-                                {wallets?.map((w: any) => (
-                                    <Option key={w._id} value={w._id} label={w.name}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <span>{w.name}</span>
-                                            <span style={{ color: '#52c41a' }}>{formatCurrency(w.balance)}</span>
-                                        </div>
-                                    </Option>
-                                ))}
-                            </Select>
-                        </div>
-                    </div>
-                )}
-            </Modal>
-        </div>
+                    )}
+                </div>
+            </Popup>
+        </Space>
     );
 };

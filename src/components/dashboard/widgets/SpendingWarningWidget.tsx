@@ -6,7 +6,7 @@ import { formatCurrency } from '@utils/format.utils';
 import { Button, Card, Progress, ProgressProps } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import './Widgets.scss';
+
 
 export const SpendingWarningWidget = () => {
     const { data: warning, isLoading } = useQuery({
@@ -61,133 +61,117 @@ export const SpendingWarningWidget = () => {
     const isTrendBad = spendingTrend > 0;
 
     return (
-        <Card title="Cảnh báo chi tiêu" className="widget-card" size="small" bordered={false} loading={isLoading}>
-            <div className="spending-warning-content">
-                <div className="main-stats">
-                    <div className="progress-container">
+        <Card 
+            title={<div style={{ fontSize: 16, fontWeight: 700 }}>Cảnh báo chi tiêu</div>} 
+            size="small" 
+            bordered={false} 
+            loading={isLoading}
+            style={{ borderRadius: 16, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', marginBottom: 16 }}
+        >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                {/* Main Stats */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div>
                         <Progress
                             type="circle"
                             percent={hasLimit ? Math.min(percentUsed, 100) : 100}
                             status={status}
                             strokeColor={color}
                             strokeWidth={10}
-                            width={110}
+                            width={100}
                             format={() => (
-                                <div className="progress-label">
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.2 }}>
                                     {hasLimit ? (
                                         <>
-                                            <span className="percent" style={{ color: typeof color === 'string' ? color : '#4096ff' }}>
+                                            <span style={{ color: typeof color === 'string' ? color : '#4096ff', fontSize: 18, fontWeight: 700 }}>
                                                 {percentUsed?.toFixed(1)}%
                                             </span>
-                                            <span className="label">Đã sử dụng</span>
+                                            <span style={{ fontSize: 11, color: '#8c8c8c', marginTop: 4 }}>Đã dùng</span>
                                         </>
                                     ) : (
                                         <>
-                                            <span className="percent" style={{ color: '#8c8c8c', fontSize: 14 }}>--</span>
-                                            <span className="label">Chưa có hạn mức</span>
+                                            <span style={{ color: '#8c8c8c', fontSize: 14 }}>--</span>
                                         </>
                                     )}
                                 </div>
                             )}
                         />
                     </div>
-                    <div className="spending-summary">
-                        <div className="summary-item">
-                            <span className="label">Đã chi tiêu</span>
-                            <span className="value">
-                                {formatCurrency(currentSpending)}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ color: '#8c8c8c', fontSize: 13 }}>Đã chi tiêu</span>
+                            <div style={{ textAlign: 'right' }}>
+                                <div style={{ fontWeight: 600, fontSize: 15, color: '#1f2c33' }}>{formatCurrency(currentSpending)}</div>
                                 {spendingTrend !== 0 && (
-                                    <span style={{ fontSize: 11, marginLeft: 6, color: isTrendBad ? '#ff4d4f' : '#52c41a' }}>
+                                    <div style={{ fontSize: 11, color: isTrendBad ? '#ff4d4f' : '#52c41a' }}>
                                         {isTrendBad ? '+' : ''}{spendingTrend}%
-                                    </span>
+                                    </div>
                                 )}
-                            </span>
+                            </div>
                         </div>
-                        <div className="summary-item">
-                            <span className="label">Hạn mức</span>
-                            <div className="value limit" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ color: '#8c8c8c', fontSize: 13 }}>Hạn mức</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 {hasLimit ? (
                                     <>
-                                        {formatCurrency(monthlyLimit)}
-                                        <EditOutlined
-                                            className='edit-icon'
-                                            style={{ cursor: 'pointer', color: '#1890ff', fontSize: 13 }}
-                                            onClick={() => setLimitModalOpen(true)}
-                                        />
+                                        <span style={{ fontWeight: 600, fontSize: 15 }}>{formatCurrency(monthlyLimit)}</span>
+                                        <EditOutlined style={{ color: '#1890ff', cursor: 'pointer' }} onClick={() => setLimitModalOpen(true)} />
                                     </>
                                 ) : (
-                                    <Button
-                                        type="link"
-                                        size="small"
-                                        style={{ padding: 0, height: 'auto', fontWeight: 600 }}
-                                        onClick={() => setLimitModalOpen(true)}
-                                    >
-                                        Thiết lập ngay
+                                    <Button type="link" size="small" style={{ padding: 0 }} onClick={() => setLimitModalOpen(true)}>
+                                        Thiết lập
                                     </Button>
                                 )}
                             </div>
                         </div>
-                        <div className="summary-item highlight">
-                            <span className="label">Còn lại</span>
-                            <span className={`value ${hasLimit ? (remainingBudget < 0 ? 'negative' : 'positive') : ''}`}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', background: hasLimit ? (remainingBudget < 0 ? '#fff1f0' : '#f6ffed') : '#f5f5f5', borderRadius: 8 }}>
+                            <span style={{ color: '#1f2c33', fontSize: 13, fontWeight: 500 }}>Còn lại</span>
+                            <span style={{ fontWeight: 700, fontSize: 15, color: hasLimit ? (remainingBudget < 0 ? '#ff4d4f' : '#52c41a') : '#1f2c33' }}>
                                 {hasLimit ? formatCurrency(remainingBudget) : '--'}
                             </span>
                         </div>
                     </div>
                 </div>
 
-                <div className="detailed-stats">
-                    <div className="stat-row">
-                        <div className="stat-item">
-                            <span className="label">
-                                <RiseOutlined style={{ color: '#1890ff' }} /> Trung bình/ngày
-                            </span>
-                            <span className="value">{formatCurrency(dailyAverage)}</span>
+                {/* Detailed Stats */}
+                <div style={{ background: '#f5f5f5', borderRadius: 12, padding: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            <span style={{ fontSize: 12, color: '#8c8c8c' }}><RiseOutlined style={{ color: '#1890ff' }} /> TB/ngày</span>
+                            <span style={{ fontWeight: 600, fontSize: 14 }}>{formatCurrency(dailyAverage)}</span>
                         </div>
-                        <div className="stat-item">
-                            <span className="label">
-                                <SafetyCertificateTwoTone twoToneColor="#52c41a" /> Nên chi/ngày
-                            </span>
-                            {hasLimit ? (
-                                <span className="value safe">{formatCurrency(safeDailySpend)}</span>
-                            ) : (
-                                <span className="value" style={{ color: '#bfbfbf' }}>--</span>
-                            )}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, textAlign: 'right' }}>
+                            <span style={{ fontSize: 12, color: '#8c8c8c' }}><SafetyCertificateTwoTone twoToneColor="#52c41a" /> Nên chi/ngày</span>
+                            <span style={{ fontWeight: 600, fontSize: 14, color: '#52c41a' }}>{hasLimit ? formatCurrency(safeDailySpend) : '--'}</span>
                         </div>
                     </div>
-                    <div className="stat-row">
-                        <div className="stat-item">
-                            <span className="label">
-                                <ThunderboltTwoTone twoToneColor="#faad14" /> Dự kiến cuối tháng
-                            </span>
-                            <span className={`value ${hasLimit && projectedSpending > monthlyLimit ? 'warning' : ''}`}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            <span style={{ fontSize: 12, color: '#8c8c8c' }}><ThunderboltTwoTone twoToneColor="#faad14" /> Dự kiến cuối t.</span>
+                            <span style={{ fontWeight: 600, fontSize: 14, color: hasLimit && projectedSpending > monthlyLimit ? '#ff4d4f' : '#1f2c33' }}>
                                 {formatCurrency(projectedSpending)}
                             </span>
                         </div>
-                        <div className="stat-item">
-                            <span className="label">
-                                <CalendarTwoTone twoToneColor="#722ed1" /> Ngày còn lại
-                            </span>
-                            <span className="value">{daysRemaining} ngày</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, textAlign: 'right' }}>
+                            <span style={{ fontSize: 12, color: '#8c8c8c' }}><CalendarTwoTone twoToneColor="#722ed1" /> Ngày còn lại</span>
+                            <span style={{ fontWeight: 600, fontSize: 14 }}>{daysRemaining} ngày</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Advice & Top Category Section */}
                 {(adviceMessage || topCategory) && (
-                    <div className="advice-container">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                         {topCategory && (
-                            <div className="top-category-row">
-                                <span className="label">
-                                    <ShoppingTwoTone twoToneColor="#eb2f96" /> Top chi tiêu:
-                                </span>
-                                <span className="value">{topCategory.name} ({topCategory.percent}%)</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
+                                <span style={{ color: '#8c8c8c' }}><ShoppingTwoTone twoToneColor="#eb2f96" /> Top chi tiêu:</span>
+                                <span style={{ fontWeight: 600 }}>{topCategory.name} ({topCategory.percent}%)</span>
                             </div>
                         )}
                         {adviceMessage && (
-                            <div className="advice-row">
-                                <BulbTwoTone twoToneColor="#fadb14" style={{ fontSize: 16, marginTop: 2 }} />
-                                <span className="text">{adviceMessage}</span>
+                            <div style={{ display: 'flex', gap: 8, background: '#fffbe6', padding: 12, borderRadius: 8, border: '1px solid #ffe58f', alignItems: 'flex-start' }}>
+                                <BulbTwoTone twoToneColor="#fadb14" style={{ fontSize: 16, marginTop: 2, flexShrink: 0 }} />
+                                <span style={{ fontSize: 13, color: '#8a6d3b', lineHeight: 1.4 }}>{adviceMessage}</span>
                             </div>
                         )}
                     </div>

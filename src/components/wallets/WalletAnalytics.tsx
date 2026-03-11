@@ -1,6 +1,6 @@
 import { analyticsApi, CardSummaryItem } from '@api/analytics.api';
 import { formatCurrency } from '@utils/format.utils';
-import { Empty, Spin, Typography } from 'antd';
+import { Empty, SpinLoading } from 'antd-mobile';
 import { useEffect, useState } from 'react';
 import {
     Bar,
@@ -15,15 +15,11 @@ import {
     XAxis,
     YAxis
 } from 'recharts';
-import './WalletAnalytics.scss';
-
-const { Title, Text } = Typography;
-
 
 export const WalletAnalytics = ({ activeWalletId }: { activeWalletId?: string | null }) => {
     const [loading, setLoading] = useState(true);
     const [summaryData, setSummaryData] = useState<CardSummaryItem[]>([]);
-    const [historyData, setHistoryData] = useState<any[]>([]);
+    const [historyData, setHistoryData] = useState<Record<string, unknown>[]>([]);
 
     useEffect(() => {
         fetchSummary();
@@ -49,10 +45,9 @@ export const WalletAnalytics = ({ activeWalletId }: { activeWalletId?: string | 
     const fetchHistory = async (walletId: string) => {
         try {
             const data = await analyticsApi.getMonthlyTransactions(undefined, walletId);
-            // Format dates for display
             const formattedData = data.map(item => ({
                 ...item,
-                displayDate: item.date ? item.date.split('T')[0].split('-')[2] : item.day // Extract day
+                displayDate: item.date ? item.date.split('T')[0].split('-')[2] : item.day
             }));
             setHistoryData(formattedData);
         } catch (error) {
@@ -60,17 +55,19 @@ export const WalletAnalytics = ({ activeWalletId }: { activeWalletId?: string | 
         }
     };
 
-    const CustomTooltip = ({ active, payload, label }: any) => {
+    interface TooltipPayloadEntry {
+        name: string;
+        value: number;
+        color: string;
+        payload?: Record<string, unknown>;
+    }
+    const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayloadEntry[]; label?: string }) => {
         if (active && payload && payload.length) {
-            // For ComposedChart, payload is array of items
-            // For BarChart (Summary), payload[0].payload has data
-
-            // Check if it's history data (has income/expense)
             if (payload[0].name === 'Thu nhập' || payload[0].name === 'Chi tiêu' || payload[0].name === 'Xu hướng') {
                 return (
-                    <div className="custom-chart-tooltip">
-                        <p className="label">Ngày {label}</p>
-                        {payload.map((entry: any, index: number) => (
+                    <div style={{ background: 'rgba(0,0,0,0.8)', borderRadius: 8, padding: '8px 12px', color: '#fff', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+                        <p style={{ margin: 0, fontSize: 12, opacity: 0.8 }}>Ngày {label}</p>
+                        {payload.map((entry: { name: string; value: number; color: string }, index: number) => (
                             <div key={index} style={{ color: entry.color, fontSize: 13 }}>
                                 {entry.name}: <span style={{ fontWeight: 600 }}>{formatCurrency(entry.value)}</span>
                             </div>
@@ -79,12 +76,11 @@ export const WalletAnalytics = ({ activeWalletId }: { activeWalletId?: string | 
                 );
             }
 
-            // Fallback for Summary BarChart
-            const data = payload[0].payload;
+            const data = payload[0].payload ?? {};
             return (
-                <div className="custom-chart-tooltip">
-                    <p className="label">{data.name || label || data.categoryName}</p>
-                    <p className="value">{formatCurrency(payload[0].value)}</p>
+                <div style={{ background: 'rgba(0,0,0,0.8)', borderRadius: 8, padding: '8px 12px', color: '#fff', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+                    <p style={{ margin: 0, fontSize: 12, opacity: 0.8 }}>{String(data['name'] || label || data['categoryName'] || '')}</p>
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{formatCurrency(payload[0].value)}</p>
                 </div>
             );
         }
@@ -94,28 +90,27 @@ export const WalletAnalytics = ({ activeWalletId }: { activeWalletId?: string | 
     const activeData = summaryData.find(w => w._id === activeWalletId);
     const showDetail = !!activeWalletId && !!activeData;
 
-    // Calculate Average Expense
     const averageExpense = historyData.length > 0
-        ? historyData.reduce((acc, curr) => acc + (curr.expense || 0), 0) / historyData.length
+        ? historyData.reduce((acc: number, curr) => acc + (Number(curr.expense) || 0), 0) / historyData.length
         : 0;
 
     return (
-        <div className="wallet-analytics-container">
-            <div className="analytics-header">
+        <div style={{ background: '#fff', borderRadius: 16, padding: 20, boxShadow: '0 1px 2px rgba(0,0,0,0.05)', marginBottom: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <div>
-                    <Title level={4} style={{ margin: 0 }}>Thống Kê Chi Tiêu</Title>
-                    <Text type="secondary" style={{ fontSize: '13px' }}>
+                    <div style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#1f2c33' }}>Thống Kê Chi Tiêu</div>
+                    <div style={{ fontSize: 13, color: '#8c98a4', marginTop: 4 }}>
                         {showDetail ? `Biến động tháng này: ${activeData?.walletName}` : 'Tổng chi tiêu theo từng ví'}
-                    </Text>
+                    </div>
                 </div>
             </div>
 
             {loading ? (
-                <div className="loading-container">
-                    <Spin />
+                <div style={{ height: 250, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <SpinLoading color="primary" />
                 </div>
             ) : (
-                <div className="chart-content">
+                <div style={{ position: 'relative' }}>
                     {!showDetail ? (
                         <div style={{ width: '100%', height: 280 }}>
                             <ResponsiveContainer>
@@ -136,7 +131,7 @@ export const WalletAnalytics = ({ activeWalletId }: { activeWalletId?: string | 
                                     />
                                     <Bar
                                         dataKey="totalExpense"
-                                        fill="#0a55eb"
+                                        fill="var(--adm-color-primary)"
                                         radius={[12, 12, 12, 12]}
                                         barSize={48}
                                         style={{ cursor: 'pointer' }}
@@ -144,7 +139,7 @@ export const WalletAnalytics = ({ activeWalletId }: { activeWalletId?: string | 
                                         {summaryData.map((entry, index) => (
                                             <Cell
                                                 key={`cell-${index}`}
-                                                fill={entry.totalExpense > 0 ? '#0a55eb' : '#E5E7EB'}
+                                                fill={entry.totalExpense > 0 ? 'var(--adm-color-primary)' : '#E5E7EB'}
                                                 style={{ transition: 'all 0.3s ease' }}
                                             />
                                         ))}
@@ -189,7 +184,6 @@ export const WalletAnalytics = ({ activeWalletId }: { activeWalletId?: string | 
                                     borderRadius: 12
                                 }}>
                                     <Empty
-                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
                                         description={<span style={{ color: '#8c8c8c' }}>Hiện tại thẻ này chưa có giao dịch</span>}
                                     />
                                 </div>

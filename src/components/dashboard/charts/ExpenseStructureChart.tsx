@@ -4,7 +4,7 @@ import { formatCurrency } from '@utils/format.utils';
 import { Card } from 'antd';
 import { useMemo } from 'react';
 import { Bar, CartesianGrid, Cell, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import '../widgets/Widgets.scss';
+
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#a0d911', '#eb2f96', '#722ed1', '#faad14'];
 

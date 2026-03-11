@@ -2,9 +2,9 @@ import { walletApi } from '@/api/wallet.api';
 import { PayStatementPayload, WalletData } from '@/types/wallet.type';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatCurrency } from '@utils/format.utils';
-import { Button, Drawer, Form, InputNumber, Segmented, Select, message } from 'antd';
-import { useEffect } from 'react';
-import './PayStatementModal.scss';
+import { Button, Form, Input, NumberKeyboard, Picker, Popup, Selector, VirtualInput } from 'antd-mobile';
+import { useEffect, useState, useRef } from 'react';
+import { toast } from 'sonner';
 
 interface PayStatementModalProps {
     open: boolean;
@@ -14,23 +14,68 @@ interface PayStatementModalProps {
     onSuccess?: () => void;
 }
 
+interface AmountInputProps {
+    value?: string | number;
+    onChange?: (val: string) => void;
+    placeholder?: string;
+}
+
+const AmountInput = ({ value, onChange, placeholder }: AmountInputProps) => {
+    const [visible, setVisible] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+            if (ref.current && !ref.current.contains(event.target as Node)) {
+                setVisible(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, []);
+
+    return (
+        <div ref={ref} style={{ position: 'relative', width: '100%' }}>
+            <VirtualInput
+                placeholder={placeholder}
+                value={value ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : ''}
+                onFocus={() => setVisible(true)}
+                clearable
+                onClear={() => onChange?.('')}
+            />
+            <NumberKeyboard
+                visible={visible}
+                onClose={() => setVisible(false)}
+                onInput={(v) => onChange?.((value || '') + v)}
+                onDelete={() => onChange?.((value || '').toString().slice(0, -1))}
+            />
+        </div>
+    );
+};
+
 export const PayStatementModal = ({ open, onClose, wallet, wallets, onSuccess }: PayStatementModalProps) => {
     const [form] = Form.useForm();
     const queryClient = useQueryClient();
-    const action = Form.useWatch('action', form);
+    const actionRaw = Form.useWatch('action', form);
+    const action = Array.isArray(actionRaw) ? actionRaw[0] : actionRaw;
     const amount = Form.useWatch('amount', form);
     const refinanceFeeRate = Form.useWatch('refinanceFeeRate', form);
 
+    const [sourcePickerVisible, setSourcePickerVisible] = useState(false);
+
     useEffect(() => {
         if (open && wallet) {
-            // Calculate outstanding debt for Credit Card: Limit - Available Balance
             const debt = (wallet.creditLimit || 0) - wallet.balance;
 
             form.setFieldsValue({
-                action: 'PAY_FULL',
+                action: ['PAY_FULL'],
                 amount: debt > 0 ? debt : 0,
-                // Default source wallet to first DEBIT_CARD or BANK, distinct from current
-                sourceWalletId: wallets.find(w => w._id !== wallet._id && (w.type === 'DEBIT_CARD' || w.type === 'BANK'))?._id
+                sourceWalletId: [wallets.find(w => w._id !== wallet._id && (w.type === 'DEBIT_CARD' || w.type === 'BANK'))?._id]
             });
         }
     }, [open, wallet, wallets, form]);
@@ -38,108 +83,111 @@ export const PayStatementModal = ({ open, onClose, wallet, wallets, onSuccess }:
     const mutation = useMutation({
         mutationFn: (payload: PayStatementPayload) => walletApi.payStatement(wallet!._id, payload),
         onSuccess: () => {
-            message.success('Thanh toán sao kê thành công');
+            toast.success('Thanh toán sao kê thành công');
             queryClient.invalidateQueries({ queryKey: ['wallets'] });
             onSuccess?.();
             onClose();
         },
         onError: () => {
-            message.error('Thanh toán thất bại');
+            toast.error('Thanh toán thất bại');
         }
     });
 
-    const onFinish = (values: any) => {
+    const onFinish = (values: Record<string, unknown>) => {
         if (!wallet) return;
         mutation.mutate({
-            action: values.action,
-            sourceWalletId: values.sourceWalletId,
-            amount: values.amount,
-            refinanceFeeRate: values.refinanceFeeRate
+            action: Array.isArray(values.action) ? values.action[0] : values.action as string,
+            sourceWalletId: Array.isArray(values.sourceWalletId) ? values.sourceWalletId[0] : values.sourceWalletId as string,
+            amount: values.amount as number,
+            refinanceFeeRate: values.refinanceFeeRate as number | undefined
         });
     };
 
+    const sourceWalletsParams = wallets.filter(w => w._id !== wallet?._id).map(w => ({
+        label: `${w.name} (${formatCurrency(w.balance)})`,
+        value: w._id
+    }));
+
     return (
-        <Drawer
-            title={`Thanh toán sao kê: ${wallet?.name}`}
-            open={open}
-            onClose={onClose}
-            placement="bottom"
-            height="auto"
-            rootClassName="pay-statement-drawer"
-            destroyOnClose
+        <Popup
+            visible={open}
+            onMaskClick={onClose}
+            bodyStyle={{ height: '75vh', borderTopLeftRadius: 16, borderTopRightRadius: 16, overflowY: 'auto' }}
         >
-            <Form form={form} layout="vertical" onFinish={onFinish}>
-                <Form.Item name="action" label="Hình thức thanh toán" rules={[{ required: true }]} style={{ marginBottom: 16 }}>
-                    <Segmented
-                        block
-                        className="payment-type-segmented"
-                        options={[
-                            { label: 'Thanh toán toàn bộ', value: 'PAY_FULL' },
-                            { label: 'Đáo hạn/Trả một phần', value: 'REFINANCE' }
-                        ]}
-                    />
-                </Form.Item>
-
-                <Form.Item
-                    name="sourceWalletId"
-                    label="Nguồn tiền"
-                    rules={[{ required: true, message: 'Vui lòng chọn nguồn tiền' }]}
-                    style={{ marginBottom: 16 }}
+            <div style={{ padding: 16 }}>
+                <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, textAlign: 'center' }}>
+                    Thanh toán sao kê: {wallet?.name}
+                </div>
+                <Form 
+                    form={form} 
+                    layout="vertical" 
+                    mode="card"
+                    onFinish={onFinish}
+                    footer={
+                        <Button color="primary" type="submit" size="large" block loading={mutation.isPending} style={{ borderRadius: 8 }}>
+                            Xác nhận thanh toán
+                        </Button>
+                    }
                 >
-                    <Select placeholder="Chọn ví thanh toán" size="large">
-                        {wallets.filter(w => w._id !== wallet?._id).map(w => (
-                            <Select.Option key={w._id} value={w._id}>
-                                {w.name} ({formatCurrency(w.balance)})
-                            </Select.Option>
-                        ))}
-                    </Select>
-                </Form.Item>
+                    <Form.Item name="action" label="Hình thức thanh toán" rules={[{ required: true }]}>
+                        <Selector
+                            columns={2}
+                            options={[
+                                { label: 'Thanh toán toàn bộ', value: 'PAY_FULL' },
+                                { label: 'Đáo hạn/Trả một phần', value: 'REFINANCE' }
+                            ]}
+                        />
+                    </Form.Item>
 
-                <Form.Item
-                    name="amount"
-                    label="Số tiền thanh toán"
-                    rules={[{ required: true, message: 'Nhập số tiền' }]}
-                    style={{ marginBottom: 16 }}
-                >
-                    <InputNumber
-                        style={{ width: '100%' }}
-                        size="large"
-                        placeholder="0"
-                        formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                        parser={value => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
-                        suffix="VND"
-                    />
-                </Form.Item>
-
-                {action === 'REFINANCE' && (
-                    <>
-                        <Form.Item
-                            name="refinanceFeeRate"
-                            label="Phí đáo hạn (%)"
-                            rules={[{ required: true, message: 'Nhập % phí' }]}
-                            style={{ marginBottom: 16 }}
+                    <Form.Item
+                        name="sourceWalletId"
+                        label="Nguồn tiền"
+                        rules={[{ required: true, message: 'Vui lòng chọn nguồn tiền' }]}
+                        trigger="onConfirm"
+                        onClick={() => setSourcePickerVisible(true)}
+                    >
+                        <Picker
+                            columns={[sourceWalletsParams]}
+                            visible={sourcePickerVisible}
+                            onClose={() => setSourcePickerVisible(false)}
                         >
-                            <InputNumber size="large" style={{ width: '100%' }} min={0} max={100} step={0.1} placeholder="Ví dụ: 1.8" />
-                        </Form.Item>
+                            {items => items.every(item => item === null) ? 'Chọn ví thanh toán' : items.map(item => item?.label).join('')}
+                        </Picker>
+                    </Form.Item>
 
-                        <div className="refinance-info-box">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                <span style={{ color: '#d48806' }}>Phí đáo hạn dự kiến:</span>
-                                <span style={{ fontWeight: 700, color: '#d48806', fontSize: 16 }}>
-                                    {formatCurrency((amount || 0) * (refinanceFeeRate || 0) / 100)}
-                                </span>
-                            </div>
-                            <div style={{ fontSize: 13, color: '#d46b08', fontStyle: 'italic' }}>
-                                * Gốc giữ nguyên, chỉ trả phí dịch vụ này.
-                            </div>
-                        </div>
-                    </>
-                )}
+                    <Form.Item
+                        name="amount"
+                        label="Số tiền thanh toán (VND)"
+                        rules={[{ required: true, message: 'Nhập số tiền' }]}
+                    >
+                        <AmountInput placeholder="0" />
+                    </Form.Item>
 
-                <Button type="primary" htmlType="submit" size="large" block loading={mutation.isPending} style={{ marginTop: 8 }}>
-                    Xác nhận thanh toán
-                </Button>
-            </Form>
-        </Drawer>
+                    {(action === 'REFINANCE' || action?.[0] === 'REFINANCE') && (
+                        <>
+                            <Form.Item
+                                name="refinanceFeeRate"
+                                label="Phí đáo hạn (%)"
+                                rules={[{ required: true, message: 'Nhập % phí' }]}
+                            >
+                                <Input type="number" min={0} max={100} step={0.1} placeholder="Ví dụ: 1.8" clearable />
+                            </Form.Item>
+
+                            <div style={{ background: '#fffbe6', border: '1px solid #ffe58f', borderRadius: 8, padding: 16, marginTop: 8, marginBottom: 16 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                                    <span style={{ color: '#d48806' }}>Phí đáo hạn dự kiến:</span>
+                                    <span style={{ fontWeight: 700, color: '#d48806', fontSize: 16 }}>
+                                        {formatCurrency((amount || 0) * (refinanceFeeRate || 0) / 100)}
+                                    </span>
+                                </div>
+                                <div style={{ fontSize: 13, color: '#d46b08', fontStyle: 'italic' }}>
+                                    * Gốc giữ nguyên, chỉ trả phí dịch vụ này.
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </Form>
+            </div>
+        </Popup>
     );
 };

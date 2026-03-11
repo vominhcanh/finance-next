@@ -6,7 +6,7 @@ import {
     ShoppingOutlined,
     UserOutlined
 } from '@ant-design/icons';
-import { Col, Row, Spin } from 'antd';
+import { Card, Grid, Space, SpinLoading } from 'antd-mobile';
 import { useEffect, useState } from 'react';
 
 import { MonthlyOverview, analyticsApi } from '@api/analytics.api';
@@ -14,7 +14,6 @@ import { formatCurrency } from '@utils/format.utils';
 import { DailyFlowChart } from './charts/DailyFlowChart';
 import { ExpenseStructureChart } from './charts/ExpenseStructureChart';
 import { FinancialTrendChart } from './charts/FinancialTrendChart';
-import './Dashboard.scss';
 import { SpendingWarningWidget } from './widgets/SpendingWarningWidget';
 import { UpcomingPaymentsWidget } from './widgets/UpcomingPaymentsWidget';
 
@@ -48,121 +47,145 @@ export const Dashboard = () => {
         fetchDashboardData();
     }, []);
 
-
     if (loading) {
         return (
-            <div className="dashboard-loading-container">
-                <Spin />
-                <div className="loading-text">Đang tải dữ liệu...</div>
+            <div style={{ height: 'calc(100vh - 104px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <SpinLoading color="primary" style={{ '--size': '36px' }} />
             </div>
         );
     }
 
+    const renderStatCard = (
+        title: string,
+        value: string | number,
+        trendValue: number | undefined,
+        IconComponent: React.ComponentType<{ style?: React.CSSProperties }>,
+        gradient: string
+    ) => {
+        const isPositive = (trendValue ?? 0) >= 0;
+        const trendColor = isPositive ? '#00c853' : '#f51b1f';
+        const trendText = trendValue ? (trendValue > 0 ? '+' : '') + trendValue + '%' : '0%';
+
+        return (
+            <Grid.Item>
+                <Card
+                    style={{ 
+                        borderRadius: 20, 
+                        background: '#ffffff', 
+                        border: 'none',
+                        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.04)'
+                    }}
+                    bodyStyle={{ padding: '16px 12px' }}
+                >
+                    <Space direction="vertical" block style={{ '--gap': '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div
+                                style={{
+                                    width: 42,
+                                    height: 42,
+                                    borderRadius: '12px',
+                                    background: gradient,
+                                    color: '#fff',
+                                    fontSize: 20,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+                                }}
+                            >
+                                <IconComponent style={{ color: '#fff' }} />
+                            </div>
+                            <div style={{ 
+                                background: isPositive ? 'rgba(0, 200, 83, 0.1)' : 'rgba(245, 27, 31, 0.1)', 
+                                padding: '4px 8px', 
+                                borderRadius: 100, 
+                                color: trendColor, 
+                                fontSize: 12, 
+                                fontWeight: 600,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 4
+                            }}>
+                                {isPositive ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                                <span>{trendText}</span>
+                            </div>
+                        </div>
+
+                        <Space direction="vertical" block style={{ '--gap': '4px' }}>
+                            <div style={{ fontSize: 13, color: '#8c8c8c', fontWeight: 500 }}>
+                                {title}
+                            </div>
+                            <div style={{ fontSize: 20, fontWeight: 700, color: '#1f2c33', lineHeight: 1.2 }}>
+                                {value}
+                            </div>
+                        </Space>
+                    </Space>
+                </Card>
+            </Grid.Item>
+        );
+    };
+
     return (
-        <div className="dashboard-content">
-            <div className="stats-grid">
-                {/* Income Card -> Total Wallet Balance */}
-                <div className="stat-card">
-                    <div className="card-top">
-                        <div className="icon-circle gradient-purple">
-                            <UserOutlined />
-                        </div>
-                        <div className={`trend ${monthlyData?.trends?.totalWalletBalance && monthlyData.trends.totalWalletBalance >= 0 ? 'positive' : 'negative'}`}>
-                            {monthlyData?.trends?.totalWalletBalance && monthlyData.trends.totalWalletBalance >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
-                        </div>
-                    </div>
-                    <div className="card-value">{formatCurrency(monthlyData?.stats?.totalWalletBalance || 0)}</div>
-                    <div className="card-label">
-                        Tổng Thu Nhập <span className={`highlight-${monthlyData?.trends?.totalWalletBalance && monthlyData.trends.totalWalletBalance >= 0 ? 'green' : 'red'}`}>
-                            {monthlyData?.trends?.totalWalletBalance ? (monthlyData.trends.totalWalletBalance > 0 ? '+' : '') + monthlyData.trends.totalWalletBalance + '%' : '0%'}
-                        </span>
-                    </div>
-                </div>
+        <Space direction="vertical" block style={{ padding: 12, paddingBottom: 100, background: '#f5f5f5', '--gap': '32px' }}>
+            {/* Stats Grid */}
+            <Grid columns={2} gap={16}>
+                {/* Income Card */}
+                {renderStatCard(
+                    'Tổng Thu Nhập',
+                    formatCurrency(monthlyData?.stats?.totalWalletBalance || 0),
+                    monthlyData?.trends?.totalWalletBalance,
+                    UserOutlined,
+                    'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)'
+                )}
 
                 {/* Expense Card */}
-                <div className="stat-card">
-                    <div className="card-top">
-                        <div className="icon-circle gradient-pink">
-                            <ShoppingOutlined />
-                        </div>
-                        <div className={`trend ${monthlyData?.trends?.totalExpense && monthlyData.trends.totalExpense >= 0 ? 'negative' : 'positive'}`}>
-                            {monthlyData?.trends?.totalExpense && monthlyData.trends.totalExpense >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
-                        </div>
-                    </div>
-                    <div className="card-value">{formatCurrency(monthlyData?.stats?.totalExpense || 0)}</div>
-                    <div className="card-label">
-                        Tổng Chi Tiêu <span className={`highlight-${monthlyData?.trends?.totalExpense && monthlyData.trends.totalExpense >= 0 ? 'green' : 'red'}`}>
-                            {monthlyData?.trends?.totalExpense ? (monthlyData.trends.totalExpense > 0 ? '+' : '') + monthlyData.trends.totalExpense + '%' : '0%'}
-                        </span>
-                    </div>
-                </div>
+                {renderStatCard(
+                    'Tổng Chi Tiêu',
+                    formatCurrency(monthlyData?.stats?.totalExpense || 0),
+                    monthlyData?.trends?.totalExpense,
+                    ShoppingOutlined,
+                    'linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%)'
+                )}
 
-                {/* Balance Card -> Net Flow */}
-                <div className="stat-card">
-                    <div className="card-top">
-                        <div className="icon-circle gradient-cyan">
-                            <EyeOutlined />
-                        </div>
-                        <div className={`trend ${monthlyData?.trends?.netBalance && monthlyData.trends.netBalance >= 0 ? 'positive' : 'negative'}`}>
-                            {monthlyData?.trends?.netBalance && monthlyData.trends.netBalance >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
-                        </div>
-                    </div>
-                    <div className="card-value">{formatCurrency(monthlyData?.stats?.netBalance || 0)}</div>
-                    <div className="card-label">
-                        Số Dư Hiện Tại <span className={`highlight-${monthlyData?.trends?.netBalance && monthlyData.trends.netBalance >= 0 ? 'green' : 'red'}`}>
-                            {monthlyData?.trends?.netBalance ? (monthlyData.trends.netBalance > 0 ? '+' : '') + monthlyData.trends.netBalance + '%' : '0%'}
-                        </span>
-                    </div>
-                </div>
+                {/* Balance Card */}
+                {renderStatCard(
+                    'Số Dư Hiện Tại',
+                    formatCurrency(monthlyData?.stats?.netBalance || 0),
+                    monthlyData?.trends?.netBalance,
+                    EyeOutlined,
+                    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+                )}
 
                 {/* Wallets/Other Card */}
-                <div className="stat-card">
-                    <div className="card-top">
-                        <div className="icon-circle gradient-teal">
-                            <PieChartOutlined />
-                        </div>
-                        <div className={`trend ${monthlyData?.trends?.totalWallets && monthlyData.trends.totalWallets >= 0 ? 'positive' : 'negative'}`}>
-                            {monthlyData?.trends?.totalWallets && monthlyData.trends.totalWallets >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
-                        </div>
-                    </div>
-                    <div className="card-value">{monthlyData?.stats?.totalWallets || 0}</div>
-                    <div className="card-label">
-                        Tổng Số Ví <span className={`highlight-${monthlyData?.trends?.totalWallets && monthlyData.trends.totalWallets >= 0 ? 'green' : 'red'}`}>
-                            {monthlyData?.trends?.totalWallets ? (monthlyData.trends.totalWallets > 0 ? '+' : '') + monthlyData.trends.totalWallets + '%' : '0%'}
-                        </span>
-                    </div>
-                </div>
-            </div>
-            {/* Warning Section - Priority 1 */}
-            <div className="warning-section">
-                <Row gutter={[16, 16]}>
-                    <Col span={24} md={12}>
-                        <SpendingWarningWidget />
-                    </Col>
-                    <Col span={24} md={12}>
-                        <UpcomingPaymentsWidget />
-                    </Col>
-                </Row>
-            </div>
+                {renderStatCard(
+                    'Tổng Số Ví',
+                    monthlyData?.stats?.totalWallets || 0,
+                    monthlyData?.trends?.totalWallets,
+                    PieChartOutlined,
+                    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+                )}
+            </Grid>
+
+            {/* Warning Section */}
+            <Grid columns={1} gap={16}>
+                <Grid.Item>
+                    <SpendingWarningWidget />
+                </Grid.Item>
+                <Grid.Item>
+                    <UpcomingPaymentsWidget />
+                </Grid.Item>
+            </Grid>
+
             {/* Financial Charts Section */}
-            <div className="charts-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 16, marginBottom: 16 }}>
-                {/* Main Trend Chart */}
-                <div style={{ gridColumn: 'span 12' }} className="trend-chart-col">
+            <Grid columns={1} gap={16}>
+                <Grid.Item>
                     <FinancialTrendChart />
-                </div>
-
-                {/* Daily Flow */}
-                <div style={{ gridColumn: 'span 12' }} className="flow-chart-col">
+                </Grid.Item>
+                <Grid.Item>
                     <DailyFlowChart />
-                </div>
-
-                {/* Structure */}
-                <div style={{ gridColumn: 'span 12' }} className="structure-chart-col">
+                </Grid.Item>
+                <Grid.Item>
                     <ExpenseStructureChart />
-                </div>
-            </div>
-
-            <div style={{ height: '100px' }}></div>
-        </div>
+                </Grid.Item>
+            </Grid>
+        </Space>
     );
 };

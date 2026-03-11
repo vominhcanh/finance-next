@@ -1,7 +1,8 @@
 import { userApi } from '@/api/user.api';
+import { formatCurrency } from '@/utils/format.utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, InputNumber, Modal } from 'antd';
-import { useEffect, useState } from 'react';
+import { Button, NumberKeyboard, Popup, VirtualInput } from 'antd-mobile';
+import { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
 
 interface SetLimitModalProps {
@@ -11,20 +12,37 @@ interface SetLimitModalProps {
 }
 
 export const SetLimitModal = ({ open, onClose, currentLimit = 0 }: SetLimitModalProps) => {
-    const [limit, setLimit] = useState<number>(currentLimit);
+    const [limit, setLimit] = useState<string>(currentLimit.toString());
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
     const queryClient = useQueryClient();
 
     useEffect(() => {
         if (open) {
-            setLimit(currentLimit);
+            setLimit(currentLimit ? currentLimit.toString() : '');
         }
     }, [open, currentLimit]);
+
+    const inputRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+            if (inputRef.current && !inputRef.current.contains(event.target as Node)) {
+                setKeyboardVisible(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, []);
 
     const { mutate, isPending } = useMutation({
         mutationFn: (amount: number) => userApi.updateMonthlyLimit(amount),
         onSuccess: () => {
             toast.success('Đã cập nhật hạn mức chi tiêu thành công');
-            // Refresh spending warning and profile
             queryClient.invalidateQueries({ queryKey: ['spendingWarning'] });
             queryClient.invalidateQueries({ queryKey: ['profile'] });
             onClose();
@@ -35,55 +53,65 @@ export const SetLimitModal = ({ open, onClose, currentLimit = 0 }: SetLimitModal
     });
 
     const handleSave = () => {
-        if (limit < 0) {
+        const numLimit = parseInt(limit, 10);
+        if (isNaN(numLimit) || numLimit < 0) {
             toast.error('Hạn mức không hợp lệ');
             return;
         }
-        mutate(limit);
+        mutate(numLimit);
     };
 
     return (
-        <Modal
-            title="Thiết lập Hạn Mức Chi Tiêu"
-            open={open}
-            onCancel={onClose}
-            footer={[
-                <div style={{ display: 'flex', gap: 8 }}>
-                    <Button key="cancel" onClick={onClose} block>
+        <Popup
+            visible={open}
+            onMaskClick={onClose}
+            bodyStyle={{ borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 16, minHeight: '35vh' }}
+        >
+            <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, textAlign: 'center' }}>
+                Thiết lập Hạn Mức Chi Tiêu
+            </div>
+            
+            <div style={{ paddingTop: 12, paddingBottom: 12 }}>
+                <p style={{ marginBottom: 16, color: '#595959', fontStyle: 'italic', fontSize: 14 }}>
+                    Nhập số tiền bạn muốn giới hạn chi tiêu trong tháng. Hệ thống sẽ cảnh báo khi bạn chi tiêu sắp vượt quá giới hạn này.
+                </p>
+                
+                <div ref={inputRef} style={{ position: 'relative', width: '100%', marginBottom: 24 }}>
+                    <VirtualInput
+                        placeholder="Nhập số tiền (VD: 20,000,000)"
+                        value={limit ? formatCurrency(parseFloat(limit)).replace('đ', '').trim() : ''}
+                        onFocus={() => setKeyboardVisible(true)}
+                        clearable
+                        onClear={() => setLimit('')}
+                        style={{ '--font-size': '18px', padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}
+                    />
+                    <NumberKeyboard
+                        visible={keyboardVisible}
+                        onClose={() => setKeyboardVisible(false)}
+                        onInput={(v) => setLimit((prev) => (prev || '') + v)}
+                        onDelete={() => setLimit((prev) => (prev || '').toString().slice(0, -1))}
+                    />
+                </div>
+
+                <div style={{ fontSize: 13, color: 'red', fontStyle: 'italic', marginBottom: 24 }}>
+                    *Hạn mức này sẽ áp dụng cho tất cả các tháng. Chi tiêu sẽ tự động reset vào ngày đầu tháng.
+                </div>
+
+                <div style={{ display: 'flex', gap: 12 }}>
+                    <Button onClick={onClose} block style={{ borderRadius: 8, flex: 1 }}>
                         Hủy
                     </Button>
                     <Button
-                        key="save"
-                        type="primary"
+                        color="primary"
                         loading={isPending}
                         onClick={handleSave}
                         block
+                        style={{ borderRadius: 8, flex: 1 }}
                     >
                         Lưu hạn mức
                     </Button>
                 </div>
-            ]}
-            centered
-        >
-            <div style={{ paddingTop: 12, paddingBottom: 12 }}>
-                <p style={{ marginBottom: 16, color: '#595959', fontStyle: 'italic' }}>
-                    Nhập số tiền bạn muốn giới hạn chi tiêu trong tháng. Hệ thống sẽ cảnh báo khi bạn chi tiêu sắp vượt quá giới hạn này.
-                </p>
-                <InputNumber
-                    style={{ width: '100%', height: 45, fontSize: 16, paddingTop: 6 }}
-                    value={limit}
-                    onChange={(val) => setLimit(val || 0)}
-                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
-                    placeholder="Nhập số tiền (VD: 20,000,000)"
-                    min={0}
-                    size="middle"
-                />
-
-                <div style={{ marginTop: 12, fontSize: 13, color: 'red', fontStyle: 'italic' }}>
-                    *Hạn mức này sẽ áp dụng cho tất cả các tháng. Chi tiêu sẽ tự động reset vào ngày đầu tháng.
-                </div>
             </div>
-        </Modal>
+        </Popup>
     );
 };

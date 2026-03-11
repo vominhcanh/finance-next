@@ -4,7 +4,7 @@ import { formatCurrency } from '@utils/format.utils';
 import { Card, Select } from 'antd';
 import { useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import '../widgets/Widgets.scss';
+
 
 export const FinancialTrendChart = () => {
     const [period, setPeriod] = useState<'6m' | '12m'>('6m');

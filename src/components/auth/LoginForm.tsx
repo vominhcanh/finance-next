@@ -1,10 +1,9 @@
 import { GoogleOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import { useAuth } from '@hooks/useAuth';
 import { useNavigate } from '@tanstack/react-router';
-import { Button, Checkbox, Form, Input, Space } from 'antd';
+import { Button, Checkbox, Form, Input, Space } from 'antd-mobile';
 import { toast } from 'sonner';
 import { LoginForm as LoginFormType } from '../../types/auth.type';
-import './AuthForm.scss';
 
 export const LoginForm = () => {
     const [form] = Form.useForm();
@@ -32,14 +31,32 @@ export const LoginForm = () => {
     };
 
     return (
-        <div className="auth-container">
-            <div className="auth-wrapper">
-                <div className="auth-logo">
-                    <div className="logo-icon">D</div>
+        <div style={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#ffffff',
+            padding: 24
+        }}>
+            <div style={{ width: '100%', maxWidth: 380 }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
+                    <div style={{
+                        width: 64,
+                        height: 64,
+                        background: 'linear-gradient(135deg, var(--adm-color-primary) 0%, #4A90E2 100%)',
+                        borderRadius: 16,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 32,
+                        fontWeight: 700,
+                        color: '#ffffff'
+                    }}>D</div>
                 </div>
-                <div className="auth-header">
-                    <h1>Chào mừng trở lại</h1>
-                    <p>Vui lòng nhập thông tin của bạn.</p>
+                <div style={{ textAlign: 'center', marginBottom: 32 }}>
+                    <h1 style={{ fontSize: 28, fontWeight: 700, margin: '0 0 8px 0', color: '#1f2c33' }}>Chào mừng trở lại</h1>
+                    <p style={{ fontSize: 13, color: '#5f6368', margin: 0 }}>Vui lòng nhập thông tin của bạn.</p>
                 </div>
 
                 <Form
@@ -47,6 +64,43 @@ export const LoginForm = () => {
                     name="login"
                     onFinish={onFinish}
                     layout="vertical"
+                    mode="card"
+                    footer={
+                        <Space direction="vertical" block style={{ '--gap': '24px' }}>
+                            <Button
+                                block
+                                color="primary"
+                                size="large"
+                                type="submit"
+                                loading={loading}
+                                style={{ borderRadius: 30, fontSize: 16 }}
+                            >
+                                Đăng nhập
+                            </Button>
+
+                            <Button
+                                block
+                                size="large"
+                                onClick={handleGoogleSignIn}
+                                style={{ borderRadius: 30, fontSize: 16 }}
+                            >
+                                <Space align="center">
+                                    <GoogleOutlined />
+                                    <span>Đăng nhập với Google</span>
+                                </Space>
+                            </Button>
+
+                            <div style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: '#1f2c33' }}>
+                                Chưa có tài khoản?{' '}
+                                <a 
+                                    onClick={() => navigate({ to: '/register' })}
+                                    style={{ color: '#1f2c33', fontWeight: 600, cursor: 'pointer', marginLeft: 4 }}
+                                >
+                                    Đăng ký
+                                </a>
+                            </div>
+                        </Space>
+                    }
                 >
                     <Form.Item
                         label="Email"
@@ -57,10 +111,9 @@ export const LoginForm = () => {
                         ]}
                     >
                         <Input
-                            prefix={<MailOutlined />}
                             placeholder="tim.jennings@example.com"
                             autoComplete="email"
-
+                            clearable
                         />
                     </Form.Item>
 
@@ -72,40 +125,17 @@ export const LoginForm = () => {
                             { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' },
                         ]}
                     >
-                        <Input.Password
-                            prefix={<LockOutlined />}
+                        <Input
                             placeholder="••••••••"
                             autoComplete="current-password"
+                            type="password"
+                            clearable
                         />
                     </Form.Item>
 
-                    <Form.Item name="remember" valuePropName="checked">
+                    <Form.Item name="remember">
                         <Checkbox>Ghi nhớ đăng nhập</Checkbox>
                     </Form.Item>
-
-                    <Space direction="vertical" size="middle" className='action-btns'>
-                        <Button
-                            type="primary"
-                            htmlType="submit"
-                            block
-                            loading={loading}
-                        >
-                            Đăng nhập
-                        </Button>
-
-                        <Button
-                            block
-                            icon={<GoogleOutlined />}
-                            onClick={handleGoogleSignIn}
-                        >
-                            Đăng nhập với Google
-                        </Button>
-                    </Space>
-
-                    <div className="auth-footer">
-                        Chưa có tài khoản?
-                        <a onClick={() => navigate({ to: '/register' })}>Đăng ký</a>
-                    </div>
                 </Form>
             </div>
         </div>

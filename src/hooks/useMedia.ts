@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 
 export function useMedia(query: string, defaultState: boolean = false) {
-    const [state, setState] = useState(defaultState);
+    const [state, setState] = useState(() => {
+        if (typeof window === 'undefined') return defaultState;
+        return window.matchMedia(query).matches;
+    });
 
     useEffect(() => {
         let mounted = true;
@@ -12,7 +15,6 @@ export function useMedia(query: string, defaultState: boolean = false) {
         };
 
         mql.addEventListener('change', onChange);
-        setState(mql.matches);
 
         return () => {
             mounted = false;

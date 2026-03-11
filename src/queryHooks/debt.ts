@@ -3,7 +3,7 @@ import { debtApi } from '@api/debt.api';
 import { DebtForm, PayInstallmentForm } from '@/types/debt.type';
 import { QueryKey } from './_constants';
 
-export const useQueryDebts = (params?: any) => {
+export const useQueryDebts = (params?: Record<string, unknown>) => {
     return useQuery({
         queryKey: [QueryKey.DEBT_LIST, params],
         queryFn: () => debtApi.getAll(params),

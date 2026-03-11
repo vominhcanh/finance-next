@@ -1,10 +1,9 @@
-import { GoogleOutlined, LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
+import { GoogleOutlined } from '@ant-design/icons';
 import { useAuth } from '@hooks/useAuth';
 import { useNavigate } from '@tanstack/react-router';
-import { Button, Form, Input, Space } from 'antd';
+import { Button, Form, Input, Space } from 'antd-mobile';
 import { toast } from 'sonner';
 import { RegisterForm as RegisterFormType } from '../../types/auth.type';
-import './AuthForm.scss';
 
 export const RegisterForm = () => {
     const [form] = Form.useForm();
@@ -27,15 +26,33 @@ export const RegisterForm = () => {
     };
 
     return (
-        <div className="auth-container">
-            <div className="auth-wrapper">
-                <div className="auth-logo">
-                    <div className="logo-icon">D</div>
+        <div style={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#ffffff',
+            padding: 24
+        }}>
+            <div style={{ width: '100%', maxWidth: 380 }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
+                    <div style={{
+                        width: 64,
+                        height: 64,
+                        background: 'linear-gradient(135deg, var(--adm-color-primary) 0%, #4A90E2 100%)',
+                        borderRadius: 16,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 32,
+                        fontWeight: 700,
+                        color: '#ffffff'
+                    }}>D</div>
                 </div>
 
-                <div className="auth-header">
-                    <h1>Tạo tài khoản</h1>
-                    <p>Đăng ký ngay để bắt đầu sử dụng.</p>
+                <div style={{ textAlign: 'center', marginBottom: 32 }}>
+                    <h1 style={{ fontSize: 28, fontWeight: 700, margin: '0 0 8px 0', color: '#1f2c33' }}>Tạo tài khoản</h1>
+                    <p style={{ fontSize: 13, color: '#5f6368', margin: 0 }}>Đăng ký ngay để bắt đầu sử dụng.</p>
                 </div>
 
                 <Form
@@ -43,6 +60,43 @@ export const RegisterForm = () => {
                     name="register"
                     onFinish={onFinish}
                     layout="vertical"
+                    mode="card"
+                    footer={
+                        <Space direction="vertical" block style={{ '--gap': '24px' }}>
+                            <Button
+                                block
+                                color="primary"
+                                size="large"
+                                type="submit"
+                                loading={loading}
+                                style={{ borderRadius: 30, fontSize: 16 }}
+                            >
+                                Đăng ký
+                            </Button>
+
+                            <Button
+                                block
+                                size="large"
+                                onClick={handleGoogleSignIn}
+                                style={{ borderRadius: 30, fontSize: 16 }}
+                            >
+                                <Space align="center">
+                                    <GoogleOutlined />
+                                    <span>Đăng ký với Google</span>
+                                </Space>
+                            </Button>
+
+                            <div style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: '#1f2c33' }}>
+                                Đã có tài khoản?{' '}
+                                <a 
+                                    onClick={() => navigate({ to: '/login' })}
+                                    style={{ color: '#1f2c33', fontWeight: 600, cursor: 'pointer', marginLeft: 4 }}
+                                >
+                                    Đăng nhập
+                                </a>
+                            </div>
+                        </Space>
+                    }
                 >
                     <Form.Item
                         label="Họ và tên"
@@ -53,9 +107,9 @@ export const RegisterForm = () => {
                         ]}
                     >
                         <Input
-                            prefix={<UserOutlined />}
                             placeholder="Nguyễn Văn A"
                             autoComplete="name"
+                            clearable
                         />
                     </Form.Item>
 
@@ -68,9 +122,9 @@ export const RegisterForm = () => {
                         ]}
                     >
                         <Input
-                            prefix={<MailOutlined />}
                             placeholder="example@email.com"
                             autoComplete="email"
+                            clearable
                         />
                     </Form.Item>
 
@@ -82,10 +136,11 @@ export const RegisterForm = () => {
                             { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' },
                         ]}
                     >
-                        <Input.Password
-                            prefix={<LockOutlined />}
+                        <Input
                             placeholder="••••••••"
                             autoComplete="new-password"
+                            type="password"
+                            clearable
                         />
                     </Form.Item>
 
@@ -105,36 +160,13 @@ export const RegisterForm = () => {
                             }),
                         ]}
                     >
-                        <Input.Password
-                            prefix={<LockOutlined />}
+                        <Input
                             placeholder="••••••••"
                             autoComplete="new-password"
+                            type="password"
+                            clearable
                         />
                     </Form.Item>
-
-                    <Space direction="vertical" size="middle" style={{ width: '100%', marginTop: 24 }}>
-                        <Button
-                            type="primary"
-                            htmlType="submit"
-                            block
-                            loading={loading}
-                        >
-                            Đăng ký
-                        </Button>
-
-                        <Button
-                            block
-                            icon={<GoogleOutlined />}
-                            onClick={handleGoogleSignIn}
-                        >
-                            Đăng ký với Google
-                        </Button>
-                    </Space>
-
-                    <div className="auth-footer">
-                        Đã có tài khoản?
-                        <a onClick={() => navigate({ to: '/login' })}>Đăng nhập</a>
-                    </div>
                 </Form>
             </div>
         </div>

@@ -1,13 +1,9 @@
-
 import { useMutateDebt } from '@/queryHooks/debt';
 import { useQueryWallets } from '@/queryHooks/wallet';
 import { formatCurrency } from '@utils/format.utils';
-import { Form, Modal, Select, Typography } from 'antd';
-import { useEffect } from 'react';
+import { Button, Form, Picker, Popup } from 'antd-mobile';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-
-const { Text } = Typography;
-const { Option } = Select;
 
 interface PayInstallmentModalProps {
     open: boolean;
@@ -28,85 +24,98 @@ export const PayInstallmentModal = ({ open, onClose, data, onSuccess }: PayInsta
     const { data: wallets } = useQueryWallets();
     const { payInstallment } = useMutateDebt();
 
+    const [pickerVisible, setPickerVisible] = useState(false);
+
     useEffect(() => {
         if (open) {
             form.resetFields();
         }
     }, [open, form]);
 
-    const handleOk = () => {
-        form.validateFields().then(values => {
-            if (!data) return;
+    const handleOk = (values: any) => {
+        if (!data) return;
 
-            payInstallment.mutate(
-                {
-                    installmentId: data.installmentId,
-                    walletId: values.walletId
+        payInstallment.mutate(
+            {
+                installmentId: data.installmentId,
+                walletId: values.walletId?.[0] || values.walletId
+            },
+            {
+                onSuccess: () => {
+                    toast.success('Thanh toán kỳ trả góp thành công');
+                    onSuccess?.();
+                    onClose();
                 },
-                {
-                    onSuccess: () => {
-                        toast.success('Thanh toán kỳ trả góp thành công');
-                        onSuccess?.();
-                        onClose();
-                    },
-                    onError: () => {
-                        toast.error('Thanh toán thất bại');
-                    }
+                onError: () => {
+                    toast.error('Thanh toán thất bại');
                 }
-            );
-        });
+            }
+        );
     };
 
+    const walletColumns = [[
+        ...(wallets || []).map((w: any) => ({
+            label: `${w.name} (${formatCurrency(w.balance)})`,
+            value: w._id
+        }))
+    ]];
+
     return (
-        <Modal
-            title="Thanh toán kỳ trả góp"
-            open={open}
-            onCancel={onClose}
-            onOk={handleOk}
-            okText="Xác nhận"
-            cancelText="Đóng"
-            confirmLoading={payInstallment.isPending}
-            centered
+        <Popup
+            visible={open}
+            onMaskClick={onClose}
+            bodyStyle={{ borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 16, minHeight: '40vh' }}
         >
+            <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, textAlign: 'center' }}>
+                Thanh toán kỳ trả góp
+            </div>
             {data && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                     <div style={{ background: '#f5f5f5', padding: 12, borderRadius: 8 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                            <Text type="secondary">Khoản vay:</Text>
-                            <Text strong>{data.name}</Text>
+                            <span style={{ color: '#8c8c8c' }}>Khoản vay:</span>
+                            <span style={{ fontWeight: 600 }}>{data.name}</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                            <Text type="secondary">Kỳ hạn:</Text>
-                            <Text>{data.installmentDisplay}</Text>
+                            <span style={{ color: '#8c8c8c' }}>Kỳ hạn:</span>
+                            <span>{data.installmentDisplay}</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <Text type="secondary">Số tiền:</Text>
-                            <Text strong style={{ color: '#faad14', fontSize: 16 }}>
+                            <span style={{ color: '#8c8c8c' }}>Số tiền:</span>
+                            <span style={{ fontWeight: 700, color: '#faad14', fontSize: 16 }}>
                                 {formatCurrency(data.amount)}
-                            </Text>
+                            </span>
                         </div>
                     </div>
 
-                    <Form form={form} layout="vertical">
+                    <Form 
+                        form={form} 
+                        layout="vertical"
+                        onFinish={handleOk}
+                        footer={
+                            <Button color="primary" type="submit" block size="large" loading={payInstallment.isPending} style={{ borderRadius: 8 }}>
+                                Xác nhận
+                            </Button>
+                        }
+                    >
                         <Form.Item
                             name="walletId"
                             label="Nguồn tiền thanh toán"
                             rules={[{ required: true, message: 'Vui lòng chọn ví' }]}
+                            trigger="onConfirm"
+                            onClick={() => setPickerVisible(true)}
                         >
-                            <Select placeholder="Chọn ví">
-                                {wallets?.map((w: any) => (
-                                    <Option key={w._id} value={w._id}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <span>{w.name}</span>
-                                            <span style={{ color: '#52c41a' }}>{formatCurrency(w.balance)}</span>
-                                        </div>
-                                    </Option>
-                                ))}
-                            </Select>
+                            <Picker
+                                columns={walletColumns}
+                                visible={pickerVisible}
+                                onClose={() => setPickerVisible(false)}
+                            >
+                                {items => items.every(item => item === null) ? 'Chọn ví thanh toán' : items.map(item => item?.label).join('')}
+                            </Picker>
                         </Form.Item>
                     </Form>
                 </div>
             )}
-        </Modal>
+        </Popup>
     );
 };

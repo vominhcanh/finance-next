@@ -1,7 +1,7 @@
 import { userApi } from '@/api/user.api';
 import { ChangePasswordForm } from '@/types/user.type';
 import { useMutation } from '@tanstack/react-query';
-import { Button, Drawer, Form, Input } from 'antd';
+import { Button, Form, Input, Popup } from 'antd-mobile';
 import { toast } from 'sonner';
 
 interface ChangePasswordDrawerProps {
@@ -25,6 +25,11 @@ export const ChangePasswordDrawer = ({ open, onClose }: ChangePasswordDrawerProp
     });
 
     const handleFinish = (values: any) => {
+        if (values.newPassword !== values.confirmPassword) {
+            toast.error('Mật khẩu nhập lại không khớp');
+            return;
+        }
+
         const payload: ChangePasswordForm = {
             oldPassword: values.oldPassword,
             newPassword: values.newPassword,
@@ -33,21 +38,31 @@ export const ChangePasswordDrawer = ({ open, onClose }: ChangePasswordDrawerProp
     };
 
     return (
-        <Drawer
-            title="Đổi Mật Khẩu"
-            open={open}
-            onClose={onClose}
-            placement="bottom"
-            height="auto"
-            className="profile-drawer"
+        <Popup
+            visible={open}
+            onMaskClick={onClose}
+            bodyStyle={{ borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 16, minHeight: '40vh' }}
         >
-            <Form form={form} layout="vertical" onFinish={handleFinish}>
+            <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, textAlign: 'center' }}>
+                Đổi Mật Khẩu
+            </div>
+
+            <Form 
+                form={form} 
+                layout="vertical" 
+                onFinish={handleFinish}
+                footer={
+                    <Button color="primary" type="submit" block size="large" loading={changePasswordMutation.isPending} style={{ borderRadius: 8 }}>
+                        Đổi mật khẩu
+                    </Button>
+                }
+            >
                 <Form.Item
                     name="oldPassword"
                     label="Mật khẩu hiện tại"
                     rules={[{ required: true, message: 'Vui lòng nhập mật khẩu cũ' }]}
                 >
-                    <Input.Password placeholder="Nhập mật khẩu hiện tại" />
+                    <Input type="password" placeholder="Nhập mật khẩu hiện tại" clearable />
                 </Form.Item>
 
                 <Form.Item
@@ -58,39 +73,17 @@ export const ChangePasswordDrawer = ({ open, onClose }: ChangePasswordDrawerProp
                         { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự' }
                     ]}
                 >
-                    <Input.Password placeholder="Nhập mật khẩu mới" />
+                    <Input type="password" placeholder="Nhập mật khẩu mới" clearable />
                 </Form.Item>
 
                 <Form.Item
                     name="confirmPassword"
                     label="Nhập lại mật khẩu mới"
-                    dependencies={['newPassword']}
-                    rules={[
-                        { required: true, message: 'Vui lòng nhập lại mật khẩu mới' },
-                        ({ getFieldValue }) => ({
-                            validator(_, value) {
-                                if (!value || getFieldValue('newPassword') === value) {
-                                    return Promise.resolve();
-                                }
-                                return Promise.reject(new Error('Mật khẩu nhập lại không khớp'));
-                            },
-                        }),
-                    ]}
+                    rules={[{ required: true, message: 'Vui lòng nhập lại mật khẩu mới' }]}
                 >
-                    <Input.Password placeholder="Nhập lại mật khẩu mới" />
+                    <Input type="password" placeholder="Nhập lại mật khẩu mới" clearable />
                 </Form.Item>
-
-                <Button
-                    type="primary"
-                    htmlType="submit"
-                    block
-                    size="middle"
-                    loading={changePasswordMutation.isPending}
-                    style={{ marginTop: 16 }}
-                >
-                    Đổi mật khẩu
-                </Button>
             </Form>
-        </Drawer>
+        </Popup>
     );
 };

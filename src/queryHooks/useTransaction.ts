@@ -5,6 +5,11 @@ import { toast } from 'sonner';
 
 export const QUERY_KEY_TRANSACTION = 'TRANSACTIONS';
 
+interface ApiError {
+    response?: { data?: { message?: string } };
+    message?: string;
+}
+
 export const useQueryTransactions = (params?: TransactionQueryParams) => {
     return useQuery({
         queryKey: [QUERY_KEY_TRANSACTION, params],
@@ -24,7 +29,7 @@ export const useMutateTransaction = () => {
             // Invalidate wallets to update balance
             queryClient.invalidateQueries({ queryKey: ['WALLETS'] });
         },
-        onError: (error: any) => {
+        onError: (error: ApiError) => {
             toast.error(error?.response?.data?.message || 'Có lỗi xảy ra');
         }
     });
@@ -37,7 +42,7 @@ export const useMutateTransaction = () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY_TRANSACTION] });
             queryClient.invalidateQueries({ queryKey: ['WALLETS'] });
         },
-        onError: (error: any) => {
+        onError: (error: ApiError) => {
             toast.error(error?.response?.data?.message || 'Có lỗi xảy ra');
         }
     });
@@ -49,7 +54,7 @@ export const useMutateTransaction = () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY_TRANSACTION] });
             queryClient.invalidateQueries({ queryKey: ['WALLETS'] });
         },
-        onError: (error: any) => {
+        onError: (error: ApiError) => {
             toast.error(error?.response?.data?.message || 'Có lỗi xảy ra');
         }
     });

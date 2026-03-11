@@ -4,7 +4,7 @@ import { formatCurrency } from '@utils/format.utils';
 import { Card } from 'antd';
 import dayjs from 'dayjs';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import '../widgets/Widgets.scss';
+
 
 export const DailyFlowChart = () => {
     const { data: dailyData, isLoading } = useQuery({

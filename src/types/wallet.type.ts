@@ -77,6 +77,7 @@ export interface WalletForm {
     color?: string;
     logo?: string;
     initialDebt?: number;
+    balance?: number;
 }
 
 export interface PayStatementPayload {
